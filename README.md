@@ -1,6 +1,6 @@
 # Nimbus - Cloud Productivity Platform
 
-Nimbus is a cloud-native platform designed to manage notes, tasks, documents, and activities with a strong focus on productivity and real-time collaboration. This project was developed for the **Cloud Computing (6 ECTS)** course at the University of Salerno.
+Nimbus is a cloud-native platform designed to manage notes, tasks, documents, and activities with a strong focus on productivity and real-time collaboration. This project was developed for the **Cloud Computing** course at the University of Salerno.
 
 ---
 
@@ -86,4 +86,4 @@ npm start
 ## Author
 
 Developed by Giacomo Favale  
-MSc in Cloud Computing — University of Salerno
+MSc in Cloud Computing - University of Salerno
