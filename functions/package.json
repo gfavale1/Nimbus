@@ -1,0 +1,17 @@
+{
+  "name": "nimbus-functions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Functions for Nimbus (reminders, backups, push notify, daily brief)",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.18.0",
+    "axios": "^1.13.2",
+    "mysql2": "^3.11.0",
+    "mysqldump": "^3.2.0",
+    "nodemailer": "^6.9.13",
+    "uuid": "^9.0.1"
+  }
+}

@@ -1,17 +1,77 @@
-require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-    res.send("Server is running...");
+// Caricamento .env
+require("dotenv").config({
+  path: path.resolve(__dirname, "../.env"),
 });
 
+// Import dei middleware
+const requireUser = require("./middleware/requireUser");
+// const { authPrincipal } = require("./middleware/authPrincipal");
+const errorHandler = require("./middleware/errorHandler");
+
+// Import delle rotte
+const attachmentRoutes = require("./routes/attachmentRoutes");
+const noteRoutes = require("./routes/noteRoutes");
+const noteTagRoutes = require("./routes/noteTagRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+const tagRoutes = require("./routes/tagRoutes");
+const shareRoutes = require("./routes/shareRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const userRoutes = require("./routes/userRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
+const noteHistoryRoutes = require("./routes/noteHistoryRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+
+// Inizializzo app express (che è quello che poi vedrò)
+const app = express();
+app.set("etag", false);
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
+app.use(express.json());
+app.use(morgan("dev"));
+
+// Autenticazione
+// In produzione: EasyAuth + requireUser
+// In sviluppo: bypass EasyAuth (requireUser resta attivo)
+if (process.env.EASYAUTH_BYPASS_DEV !== "1") {
+  app.use(authPrincipal);
+} else {
+  console.log("Modalità DEV: bypass EasyAuth attivo - senno non mi apparo con autent.");
+}
+
+// Tutte le API sotto /api richiedono utente autenticato
+app.use("/api", requireUser);
+
+// Rotte delle varie api
+app.use("/api", attachmentRoutes);
+app.use("/api/notes", noteRoutes);
+app.use("/api/notes", noteHistoryRoutes);
+app.use("/api/notes", noteTagRoutes);
+
+app.use("/api/tasks", taskRoutes);
+app.use("/api/tags", tagRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/settings", settingsRoutes);
+
+// Rotte parzialmente pubbliche
+app.use("/api/users", userRoutes);
+app.use("/api", shareRoutes);
+app.use("/api/ai", aiRoutes);
+
+// Error handlex (per ultimo sempre sennò crasha -- non so perchè)
+app.use(errorHandler);
+
+// Avvio il server
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Nimbus API listening on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 });

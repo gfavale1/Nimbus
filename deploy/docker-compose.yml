@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: nimbus_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: nimbus_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: nimbus_user
+      MYSQL_PASSWORD: nimbus_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - nimbus_db_data:/var/lib/mysql
+      - ../init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: nimbus_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    env_file:
+      - ../backend/.env
+    environment:
+      - DB_HOST=db
+      - DB_USER=nimbus_user
+      - DB_PASSWORD=nimbus_password
+      - DB_NAME=nimbus_db
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: nimbus_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+volumes:
+  nimbus_db_data:

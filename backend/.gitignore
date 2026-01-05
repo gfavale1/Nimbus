@@ -1,0 +1,29 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Variabili d'ambiente (NB che i dottorandi ci tengono)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Os / ditor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime / Temp
+.tmp/
+temp/
+.cache/
+
+# Roba di docker
+docker-data/

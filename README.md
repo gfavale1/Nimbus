@@ -1,89 +1,118 @@
-# Nimbus - Cloud Productivity Platform
+Nimbus  
 
-Nimbus is a cloud-native platform designed to manage notes, tasks, documents, and activities with a strong focus on productivity and real-time collaboration. This project was developed for the **Cloud Computing** course at the University of Salerno.
+Nimbus è una piattaforma **cloud-native** progettata per la gestione avanzata di **note, task, allegati e collaborazione**, con un forte focus su **produttività personale**, **condivisione sicura** e **automazione intelligente** tramite servizi Microsoft Azure.
 
----
-
-## Features
-
-- Note management with dynamic tagging and file attachments (images, PDFs)
-- Task management with deadlines, priorities, and reminders
-- Real-time collaboration with version history
-- Customizable dashboard with metrics, goals, and recent activity
-- Push and email notifications to keep users updated
-- Automated backup and data synchronization
+L’obiettivo del progetto è fornire un ambiente unificato in cui gli utenti possano:
+- organizzare informazioni,
+- rispettare le scadenze,
+- collaborare in modo sicuro,
+- ricevere supporto intelligente tramite funzionalità AI.
 
 ---
 
-## Azure Services Used
+## Caratteristiche Principali
 
-| Service                      | Purpose                                                                |
-|------------------------------|------------------------------------------------------------------------|
-| Azure App Service            | Hosts the frontend (React.js) and backend (Node.js)                    |
-| Azure Database for MySQL     | Stores structured data such as notes, tasks, and user information      |
-| Azure Blob Storage           | Secure storage for user-uploaded files                                 |
-| Azure Entra ID               | User authentication and role management                                |
-| Azure Functions              | Serverless logic for notifications and scheduled backups               |
-| Azure Notification Hubs      | Push/email notifications for users                                     |
-| Azure Monitor & App Insights | Application performance monitoring and diagnostics                     |
-| Azure CDN                    | Optimizes static file distribution and performance                     |
-
----
-
-## Project Structure
-
-```
-project-root/
-|
-├── backend/       # REST API - Node.js + Express + Azure SDK
-├── frontend/      # User Interface - React.js + Context API
-├── deploy/        # Deployment scripts and configuration for Azure
-└── README.md      # Project documentation (this file)
-```
+### Funzionalità Core
+- **Gestione Note** con tagging dinamico
+- **Allegati** (PDF, immagini, file) con storage sicuro
+- **Storico versioni** e ripristino delle modifiche
+- **Condivisione note** con ruoli (owner / editor / viewer)
+- **Task Management** con priorità, scadenze e stati
+- **Promemoria automatici** per task imminenti
+- **Dashboard** con metriche, statistiche e panoramica attività
+- **AI Daily Brief** per il riepilogo automatico della giornata
+- **Notifiche email** centralizzate
+- **Autenticazione enterprise** con Microsoft Entra ID
 
 ---
 
-## Local Setup
+## Architettura Cloud
 
-### 1. Clone the repository
+Nimbus segue un’architettura cloud-native basata sulla separazione dei responsibility layers. Il frontend è completamente disaccoppiato dal backend e comunica esclusivamente tramite API REST sicure. Le operazioni asincrone e 
+pianificate (notifiche, promemoria, sintesi AI) sono delegate a componenti serverless, riducendo il carico applicativo e migliorando la scalabilità.
+
+L’uso di servizi gestiti Azure (Database, Blob Storage, Entra ID) consente di minimizzare la complessità infrastrutturale e concentrarsi sulla logica applicativa.
+
+### Frontend
+- **React + Vite**
+- Layout applicativo con Sidebar e routing protetto
+- Autenticazione tramite **Azure Entra ID (Easy Auth / MSAL)**
+- UI responsive con modali e dashboard interattiva
+- Hosting su **Azure App Service** / **Azure Static Web Apps**
+
+### Backend
+- **Node.js + Express**
+- API REST per note, task, allegati e condivisioni
+- Controllo permessi e ruoli applicativi
+- Integrazione diretta con Azure Functions
+- Hosting su **Azure App Service**
+
+### Servizi Azure Utilizzati
+- **Microsoft Entra ID**
+  - Autenticazione e gestione identità
+  - Easy Auth in produzione
+- **Azure Database for MySQL**
+  - Persistenza dati strutturati (utenti, note, task, permessi)
+- **Azure Blob Storage**
+  - Archiviazione allegati con accesso sicuro (SAS)
+- **Azure Functions**
+  - Invio notifiche email
+  - Promemoria task pianificati
+  - Daily Brief automatico
+- **Azure OpenAI**
+  - Sintesi intelligente di note e task
+- **Azure Monitor** 
+  - Monitoraggio prestazioni
+- **Application Insights**
+  -  Diagnostica
+- **Azure CDN**
+  - Distribuzione ottimizzata dei file statici
+- **Azure App Service**
+  - Host del backend
+- **Azure Static Webapp**
+  - Host del frontend
+
+---
+
+## Avvio con Docker (DEV)
+
 ```bash
-git clone https://github.com/gfavale1/Nimbus
-cd nimbus
+cd deploy
+docker compose up --build
 ```
 
-### 2. Start the backend
-```bash
-cd backend
-npm install
-npm start
-```
-
-### 3. Start the frontend
-```bash
-cd frontend
-npm install
-npm start
-```
+Avvia frontend, backend e servizi necessari allo sviluppo locale.
 
 ---
 
-## Main Technologies
+## Documentazione
 
-- **Frontend**: React.js, Axios, React Router, Context API
-- **Backend**: Node.js, Express, Azure Blob SDK, MySQL2
-- **Cloud**: Azure App Service, MySQL, Blob Storage, Notification Hub, Entra ID, Functions, Monitor
-
----
-
-## Security
-
-- Authentication and role management via Azure Entra ID
-- Secure file access using signed SAS tokens from Azure Blob
-- Monitoring and diagnostics through Azure Application Insights
+- README dedicati per backend, frontend, functions e deploy  
+- JSDoc uniforme su controller, service e middleware  
+- Documentazione architetturale e motivazioni progettuali  
 
 ---
 
-## Author
+## Contesto Accademico
 
-Developed by Giacomo Favale  
-MSc in Cloud Computing - University of Salerno
+Progetto sviluppato per il corso di **Cloud Computing**  
+Università degli Studi di Salerno 
+
+## Struttura del Progetto
+
+```text
+nimbus/
+├── backend/        # API Node.js / Express
+│   └── README.md
+├── frontend/       # React + Vite
+│   └── README.md
+├── functions/      # Azure Functions (serverless)
+│   └── README.md
+├── deploy/         # Script e configurazioni di deploy
+│   └── README_DEPLOY.md
+├── .gitignore
+├── init.sql
+└── README.md    
+
+--- 
+
