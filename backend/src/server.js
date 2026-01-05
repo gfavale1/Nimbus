@@ -30,10 +30,24 @@ const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 app.set("etag", false);
 
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",")
+  : [];
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: function (origin, callback) {
+    // richieste server-to-server o curl
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 app.use(morgan("dev"));
 
