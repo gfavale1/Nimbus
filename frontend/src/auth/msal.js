@@ -6,6 +6,7 @@ import { PublicClientApplication } from "@azure/msal-browser";
  * Ruolo:
  * - Solo login / logout Microsoft (UX)
  */
+const redirectUri = import.meta.env.VITE_MSAL_REDIRECT_URI;
 
 export const msalConfig = {
   auth: {
