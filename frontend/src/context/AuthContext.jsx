@@ -5,7 +5,7 @@ import { useMsal } from "@azure/msal-react";
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const { accounts } = useMsal(); // ✅ QUI È CORRETTO
+    const { accounts } = useMsal(); 
     const hasBootstrapped = useRef(false);
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,8 +19,10 @@ export function AuthProvider({ children }) {
             hasBootstrapped.current = true;
 
             try {
-                const res = await fetch("/api/users/me", {
-                    credentials: "include",
+                const API_URL = import.meta.env.VITE_API_URL;
+
+                const res = await fetch(`${API_URL}/users/me`, {
+                  credentials: "include",
                 });
 
                 console.log("[AuthContext] /me status:", res.status);
