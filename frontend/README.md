@@ -1,6 +1,6 @@
 # Nimbus – Frontend
 
-Frontend sviluppato in **React e Vite**; fornisce l’interfaccia utente per la gestione di **note**, **task**, **allegati**, **condivisioni** e **dashboard**, integrandosi con il backend.
+Frontend sviluppato con **React e Vite**; fornisce l’interfaccia utente per la gestione di **note**, **task**, **allegati**, **condivisioni** e **dashboard**, integrandosi con il backend.
 
 ---
 
