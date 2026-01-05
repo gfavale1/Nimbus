@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
             try {
                 const API_URL = import.meta.env.VITE_API_URL;
 
-                const res = await fetch(`${API_URL}/users/me`, {
+                const res = await fetch(`${API_URL}/api/users/me`, {
                   credentials: "include",
                 });
 
