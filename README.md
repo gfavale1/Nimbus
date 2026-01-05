@@ -1,4 +1,4 @@
-Nimbus  
+## Nimbus  
 
 Nimbus è una piattaforma **cloud-native** progettata per la gestione avanzata di **note, task, allegati e collaborazione**, con un forte focus su **produttività personale**, **condivisione sicura** e **automazione intelligente** tramite servizi Microsoft Azure.
 
