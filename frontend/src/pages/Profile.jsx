@@ -6,7 +6,18 @@ import http from "../api/http";
 
 export default function Profile() {
   const { user } = useAuth(); 
-  const signOut = () => { window.location.href = "/.auth/logout"; };
+
+  // Funzione di Logout ufficiale Azure + pulizia locale
+  const signOut = () => { 
+    localStorage.clear(); 
+    window.location.href = "/.auth/logout?post_logout_redirect_uri=/"; 
+  };
+
+  // Funzione per pulire la cache (quella che causava l'errore perché non ce stava)
+  const resetCache = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
 
   const [recentNotes, setRecentNotes] = useState([]);
   const [recentTasks, setRecentTasks] = useState([]);
@@ -24,28 +35,27 @@ export default function Profile() {
     return [];
   };
 
-  // Carica dati recenti e impostazioni utente
   useEffect(() => {
     const loadData = async () => {
       try {
         const notes = await getAllNotes();
         const taskResp = await getAllTasks();
-
         const tasks = normalizeTasks(taskResp);
 
         setRecentNotes(Array.isArray(notes) ? notes.slice(0, 3) : []);
         setRecentTasks(tasks.slice(0, 3));
 
+        // Carica le impostazioni reali dal backend
         const res = await http.get("/settings/me");
-        await http.put("/settings/me", settings);
+        if (res.data) setSettings(res.data);
+        
       } catch (err) {
         console.error("Errore caricamento dati profilo:", err);
       }
     };
-    loadData();
-  }, []);
+    if (user) loadData();
+  }, [user]);
 
-  // Salva preferenze
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -72,21 +82,18 @@ export default function Profile() {
       <div style={styles.card}>
         <h1 style={styles.title}>Profilo Utente</h1>
 
-        {/* --- Sezione Profilo --- */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Informazioni Account</h3>
           <div style={styles.infoGrid}>
             <div><strong>Nome:</strong> {user.name}</div>
             <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>ID Entra:</strong> {user.external_id}</div>
-            <div><strong>Accesso:</strong> {new Date().toLocaleString()}</div>
+            <div><strong>ID Azure:</strong> {user.userId || user.externalId}</div>
+            <div><strong>Sessione:</strong> Attiva</div>
           </div>
         </div>
 
-        {/* --- Sezione Preferenze --- */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Impostazioni & Preferenze</h3>
-
           <div style={styles.toggleGroup}>
             {[
               ["Notifiche Email", "notify_email"],
@@ -107,9 +114,7 @@ export default function Profile() {
                   <div
                     style={{
                       ...styles.toggleCircle,
-                      transform: settings[key]
-                        ? "translateX(22px)"
-                        : "translateX(0)",
+                      transform: settings[key] ? "translateX(22px)" : "translateX(0)",
                     }}
                   />
                 </div>
@@ -117,17 +122,12 @@ export default function Profile() {
             ))}
           </div>
 
-          <button
-            onClick={handleSave}
-            style={styles.saveBtn}
-            disabled={loading}
-          >
+          <button onClick={handleSave} style={styles.saveBtn} disabled={loading}>
             {loading ? "Salvataggio..." : "Salva Preferenze"}
           </button>
-          {saved && <p style={styles.savedMsg}>Preferenze salvate</p>}
+          {saved && <p style={styles.savedMsg}>Preferenze salvate correttamente</p>}
         </div>
 
-        {/* --- Attività Recenti --- */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Attività Recenti</h3>
           <div style={styles.activityGrid}>
@@ -138,17 +138,11 @@ export default function Profile() {
                   {recentNotes.map((n) => (
                     <div key={n.id} style={styles.miniCard}>
                       <h4 style={styles.miniTitle}>{n.title}</h4>
-                      <p style={styles.miniText}>
-                        {n.content?.slice(0, 100) || "Nessun contenuto"}
-                      </p>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p style={styles.empty}>Nessuna nota recente</p>
-              )}
+              ) : <p style={styles.empty}>Nessuna nota recente</p>}
             </div>
-
             <div>
               <h4 style={styles.subtitle}>Ultime Attività</h4>
               {recentTasks.length ? (
@@ -156,23 +150,14 @@ export default function Profile() {
                   {recentTasks.map((t) => (
                     <div key={t.id} style={styles.miniCard}>
                       <h4 style={styles.miniTitle}>{t.title}</h4>
-                      <p style={styles.miniText}>
-                        Scadenza:{" "}
-                        {t.due_date
-                          ? new Date(t.due_date).toLocaleDateString()
-                          : "N/D"}
-                      </p>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p style={styles.empty}>Nessuna attività recente</p>
-              )}
+              ) : <p style={styles.empty}>Nessuna attività recente</p>}
             </div>
           </div>
         </div>
 
-        {/* --- Azioni --- */}
         <div style={styles.actions}>
           <button onClick={signOut} style={styles.logoutBtn}>Disconnetti</button>
           <button onClick={resetCache} style={styles.secondaryBtn}>Pulisci Cache</button>

@@ -2,17 +2,47 @@ import React from "react";
 
 export default function Login() {
   const handleLogin = () => {
+    // Reindirizzamento al flusso EasyAuth di Azure
     window.location.href =
       "/.auth/login/aad?post_login_redirect_uri=/dashboard";
   };
 
-  return (
-    <div>
-      <h1>Nimbus</h1>
+  const handleReset = () => {
+    localStorage.clear();
+    alert("Cache pulita correttamente");
+  };
 
-      <button onClick={handleLogin}>
-        Accedi con Microsoft
-      </button>
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <div style={styles.logo}>☁️</div>
+        <h1 style={styles.title}>Nimbus</h1>
+        <p style={styles.subtitle}>
+          Il tuo hub intelligente per note e attività
+        </p>
+
+        <button 
+          onClick={handleLogin} 
+          style={styles.loginButton}
+          onMouseOver={(e) => e.target.style.backgroundColor = "#1d4ed8"}
+          onMouseOut={(e) => e.target.style.backgroundColor = "#2563eb"}
+        >
+          Accedi con Microsoft
+        </button>
+
+        <button 
+          onClick={handleReset} 
+          style={styles.resetButton}
+          onMouseOver={(e) => e.target.style.backgroundColor = "#f1f5f9"}
+          onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}
+        >
+          Pulisci Cache
+        </button>
+
+        <div style={styles.footer}>
+          Progetto Nimbus &copy; 2026 - Unisa
+        </div>
+      </div>
     </div>
   );
 }
@@ -30,7 +60,7 @@ const styles = {
     backgroundColor: "#ffffff",
     padding: "3rem 4rem",
     borderRadius: "16px",
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
     textAlign: "center",
     maxWidth: "420px",
     width: "90%",
@@ -43,7 +73,7 @@ const styles = {
     fontSize: "1.8rem",
     fontWeight: "700",
     color: "#1e293b",
-    marginBottom: "0.3rem",
+    margin: "0.3rem 0",
   },
   subtitle: {
     fontSize: "1rem",
