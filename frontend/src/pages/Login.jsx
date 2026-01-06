@@ -15,8 +15,7 @@ export default function Login() {
         <button
           onClick={() => {
             window.location.href =
-              `${API_URL}/.auth/login/aad?post_login_redirect_uri=` +
-              encodeURIComponent(window.location.origin + "/dashboard");
+              "/.auth/login/aad?post_login_redirect_uri=/dashboard";
           }}
         >
           Accedi con Microsoft
