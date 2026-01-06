@@ -30,23 +30,13 @@ const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 app.set("etag", false);
 
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(",")
-  : [];
+const allowedOrigin = process.env.CORS_ORIGINS;
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // richieste server-to-server o curl
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error("Non permesso da CORS"));
-  },
+  origin: allowedOrigin,
   credentials: true,
 }));
+
 
 app.use(express.json());
 app.use(morgan("dev"));
