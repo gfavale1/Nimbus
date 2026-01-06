@@ -14,33 +14,33 @@ export function AuthProvider({ children }) {
             hasBootstrapped.current = true;
 
             try {
-                const azureRes = await fetch("/.auth/me");
-                const azureData = await azureRes.json();
+                const res = await fetch("/.auth/me");
+                const data = await res.json();
 
-                if (azureData && azureData[0]) {
-                    const clientPrincipal = azureData[0];
+                const principal = data.clientPrincipal || (data[0] ? data[0] : null);
+
+                if (principal) {
                     const userData = {
-                        userId: clientPrincipal.user_id,
-                        name: clientPrincipal.user_claims.find(c => c.typ === "name")?.val || clientPrincipal.user_id,
-                        email: clientPrincipal.user_id // In EntraID spesso l'id è l'email
+                        userId: principal.userId,
+                        name: principal.userDetails.split('@')[0], // Prendi la prima parte dell'email come nome
+                        email: principal.userDetails
                     };
 
                     const backendUrl = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
-                    const regRes = await fetch(`${backendUrl}/api/auth/register`, {
+                    await fetch(`${backendUrl}/api/auth/register`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(userData)
                     });
 
-                    if (regRes.ok) {
-                        setUser(userData);
-                        setIsAuthenticated(true);
-                    }
+                    setUser(userData);
+                    setIsAuthenticated(true);
+                    console.log("Siamo dentro!");
                 } else {
                     setIsAuthenticated(false);
                 }
             } catch (err) {
-                console.error("Errore Bootstrapping Auth:", err);
+                console.error("Errore:", err);
                 setIsAuthenticated(false);
             } finally {
                 setLoading(false);
