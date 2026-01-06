@@ -1,5 +1,15 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html"
-  }
+  },
+  "routes": [
+    {
+      "route": "/api/*",
+      "proxies": [
+        {
+          "endpoint": "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net/api"
+        }
+      ]
+    }
+  ]
 }

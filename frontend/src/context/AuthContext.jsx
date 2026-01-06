@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
       hasBootstrapped.current = true;
 
       try {
-        const API_URL = import.meta.env.VITE_API_URL;
+        const API_URL = "";
         if (!API_URL || API_URL === "undefined") {
           throw new Error("VITE_API_URL è undefined! Controlla la build.");
         }
