@@ -59,26 +59,12 @@ async function requireUser(req, res, next) {
 
     const { external_id, email, name } = req.principal;
 
-      const externalId =
-        principal.userId ||
-        principal.claims?.find(c => c.typ === "oid")?.val;
-
-      const email =
-        principal.userDetails ||
-        principal.claims?.find(c => c.typ === "preferred_username")?.val ||
-        "unknown@example.com";
-
-      const name =
-        principal.claims?.find(c => c.typ === "name")?.val ||
-        email.split("@")[0] ||
-        "User";
-
       const dbId = await upsertUserByExternalId({
         external_id: externalId,
         email,
         name
       });
-
+  
       req.user = {
         id: dbId,        
         dbId,
