@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
                 console.log("Tentativo di autenticazione via Proxy...");
 
                 // Se API_URL è vuoto, la fetch diventerà "/api/users/me"
-                const res = await fetch(`${API_URL}/api/users/me`, {
+                const res = await fetch(`/api/users/me`, {
                     credentials: "include",
                 });
 
