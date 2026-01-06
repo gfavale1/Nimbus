@@ -12,7 +12,7 @@ import axios from "axios";
  * - baseURL da env (Vite): VITE_API_BASE_URL
  */
 
-const baseURL = `${import.meta.env.VITE_API_URL}/api`;;
+const baseURL = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net/api";
 
 const http = axios.create({
   baseURL,
