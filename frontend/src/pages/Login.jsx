@@ -1,14 +1,18 @@
 import React from "react";
 
 export default function Login() {
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
+  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
   const handleLogin = () => {
+    if (!BACKEND_URL || !FRONTEND_URL) {
+      console.error("Errore: Variabili d'ambiente mancanti nel file .yml!", { BACKEND_URL, FRONTEND_URL });
+      alert("Errore di configurazione del sistema.");
+      return;
+    }
+
     const postLoginRedirect = encodeURIComponent(`${FRONTEND_URL}/dashboard`);
 
-
-    // L'URL finale deve esere: https://backend.com/.auth/login/aad?post_login_redirect_uri=https://frontend.com/dashboard
     window.location.href = `${BACKEND_URL}/.auth/login/aad?post_login_redirect_uri=${postLoginRedirect}`;
   };
 
@@ -16,7 +20,7 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h1>Nimbus</h1>
-        <p>Benvenuto nel progetto universitario Nimbus</p>
+        <p>Benvenuto nell'applicazione</p>
         
         <button onClick={handleLogin} style={styles.button}>
           Accedi con Microsoft
