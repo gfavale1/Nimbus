@@ -14,24 +14,30 @@ export function AuthProvider({ children }) {
             hasBootstrapped.current = true;
 
             try {
-                // Rimuoviamo il controllo "if (!API_URL)"
-                const API_URL = import.meta.env.VITE_API_URL || "";
-
                 console.log("Tentativo di autenticazione via Proxy...");
 
-                // Se API_URL è vuoto, la fetch diventerà "/api/users/me"
                 const res = await fetch(`/api/users/me`, {
                     credentials: "include",
                 });
 
-                console.log("Risposta Proxy status:", res.status);
-
+                console.log("Status ricevuto:", res.status);
                 const contentType = res.headers.get("content-type");
+                console.log("Content-Type ricevuto:", contentType);
+
                 if (res.ok && contentType && contentType.includes("application/json")) {
                     const data = await res.json();
-                    setUser(data);
-                    setIsAuthenticated(true);
+                    console.log("Dati utente ricevuti:", data);
+
+                    if (data && Object.keys(data).length > 0) {
+                        setUser(data);
+                        setIsAuthenticated(true);
+                        console.log("Autenticazione COMPLETATA con successo");
+                    } else {
+                        console.warn("Dati ricevuti vuoti, imposto false");
+                        setIsAuthenticated(false);
+                    }
                 } else {
+                    console.error("Fallito controllo header o status. OK:", res.ok, "CT:", contentType);
                     setIsAuthenticated(false);
                 }
             } catch (err) {
