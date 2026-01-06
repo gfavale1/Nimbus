@@ -4,37 +4,17 @@ import { useMsalAuth } from "../hooks/useMsalAuth";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { signIn, statusText, isTransitioning } = useMsalAuth();
-  const { isAuthenticated, loading } = useAuth();
-  const navigate = useNavigate();
-
-  // 🔑 SE sei autenticato → vai in dashboard
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [isAuthenticated, loading, navigate]);
-
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={styles.logo}>☁️</div>
-
-        <h1 style={styles.title}>Nimbus</h1>
-        <p style={styles.subtitle}>
-          Accedi con Microsoft per continuare
-        </p>
+        <h1>Nimbus</h1>
 
         <button
-          style={{
-            ...styles.loginButton,
-            opacity: isTransitioning ? 0.7 : 1,
-            cursor: isTransitioning ? "not-allowed" : "pointer",
+          onClick={() => {
+            window.location.href = "/.auth/login/aad";
           }}
-          onClick={signIn}
-          disabled={isTransitioning}
         >
-          {isTransitioning ? statusText : "Accedi con Microsoft"}
+          Accedi con Microsoft
         </button>
       </div>
     </div>
