@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 export default function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
+  console.log("Auth State:", { isAuthenticated, loading });
+
   if (loading) {
     return <div>Connessione a Nimbus…</div>;
   }

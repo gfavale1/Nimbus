@@ -45,6 +45,7 @@ jobs:
           action: upload
           app_location: frontend
           output_location: dist
+          config_file_location: frontend
           skip_app_build: false
 
   close_pull_request_job:
