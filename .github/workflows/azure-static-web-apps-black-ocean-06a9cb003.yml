@@ -34,6 +34,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_URL: https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net
+          VITE_FRONTEND_URL: https://black-ocean-06a9cb003.azurestaticapps.net
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps
@@ -57,6 +58,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_OCEAN_06A9CB003 }}
           action: close
+
 
 
 
