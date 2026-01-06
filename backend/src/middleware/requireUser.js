@@ -53,13 +53,11 @@ async function upsertUserByExternalId({ external_id, email, name }) {
  */
 async function requireUser(req, res, next) {
   try {
-    /* -------------------------------------------------------
-     * AZURE EASY AUTH
-     * ----------------------------------------------------- */
-    if (req.headers["x-ms-client-principal"]) {
-      const principal = JSON.parse(
-        Buffer.from(req.headers["x-ms-client-principal"], "base64").toString("utf8")
-      );
+    if (!req.principal) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { external_id, email, name } = req.principal;
 
       const externalId =
         principal.userId ||
@@ -135,7 +133,7 @@ async function requireUser(req, res, next) {
      * ----------------------------------------------------- */
     if (process.env.NODE_ENV !== "production") {
       req.user = {
-        id: 1,           // 🔑 FIX
+        id: 1,          
         dbId: 1,
         externalId: "local-dev",
         email: "local@dev",
