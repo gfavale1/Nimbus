@@ -55,7 +55,7 @@ app.use(morgan("dev"));
 // In produzione: EasyAuth + requireUser
 // In sviluppo: bypass EasyAuth (requireUser resta attivo)
 // if (process.env.EASYAUTH_BYPASS_DEV !== "1") {
-app.use(authPrincipal);
+app.use("/api", authPrincipal);
 //} else {
 //  console.log("Modalità DEV: bypass EasyAuth attivo - senno non mi apparo con autent.");
 // }
