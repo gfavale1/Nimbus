@@ -6,20 +6,35 @@ const isDevBypass = process.env.EASYAUTH_BYPASS_DEV === '1';
 function parseEasyAuthPrincipal(req) {
   const b64 = req.headers['x-ms-client-principal'];
   if (!b64) return null;
+
   try {
-    const json = Buffer.from(b64, 'base64').toString('utf8');
-    const obj = JSON.parse(json);
-    const claims = Object.fromEntries(obj?.claims?.map(c => [c.typ, c.val]) || []);
+    const obj = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+
+    const claims = Object.fromEntries(
+      (obj.claims || []).map(c => [c.typ, c.val])
+    );
+
     return {
-      external_id: claims.oid || claims.sub || claims.nameid,
-      email: claims.preferred_username || claims.upn || claims.emails,
-      name: claims.name || claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+      external_id:
+        obj.userId ||
+        claims.oid ||
+        claims.sub,
+
+      email:
+        claims.preferred_username ||
+        claims.emailaddress ||
+        claims.upn,
+
+      name:
+        claims.name ||
+        claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
     };
   } catch (err) {
     console.error("[authPrincipal] parse error:", err);
     return null;
   }
 }
+
 
 /**
  * Middleware principale: setta req.principal se autenticato.
@@ -41,4 +56,5 @@ function authPrincipal(req, res, next) {
 }
 
 module.exports = { authPrincipal };
+
 
