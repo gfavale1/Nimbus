@@ -3,6 +3,8 @@ import React from "react";
 export default function Login() {
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const redirect = encodeURIComponent(window.location.origin);
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -12,7 +14,7 @@ export default function Login() {
           onClick={() => {
             window.location.href =
               `${API_URL}/.auth/login/aad` +
-              `?post_login_redirect_uri=${window.location.origin}`;
+              `?post_login_redirect_uri=${redirect}`;
           }}
         >
           Accedi con Microsoft
