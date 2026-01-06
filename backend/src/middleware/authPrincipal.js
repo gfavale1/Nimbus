@@ -49,10 +49,9 @@ function authPrincipal(req, res, next) {
 
   if (principal?.external_id) {
     req.principal = principal;
-    return next();
   }
 
-  return res.status(401).json({ error: "Unauthorized (authPrincipal)" });
+  next();
 }
 
 module.exports = { authPrincipal };
