@@ -10,7 +10,9 @@ export default function Login() {
 
         <button
           onClick={() => {
-            window.location.href = `${API_URL}/.auth/login/aad?post_login_redirect_uri=${window.location.origin}`;
+            window.location.href =
+              `${API_URL}/.auth/login/aad` +
+              `?post_login_redirect_uri=${window.location.origin}`;
           }}
         >
           Accedi con Microsoft
