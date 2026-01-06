@@ -14,40 +14,38 @@ export function AuthProvider({ children }) {
             hasBootstrapped.current = true;
 
             try {
-                console.log("Tentativo di autenticazione via Proxy...");
+                const azureRes = await fetch("/.auth/me");
+                const azureData = await azureRes.json();
 
-                const res = await fetch(`/api/users/me`, {
-                    credentials: "include",
-                });
+                if (azureData && azureData[0]) {
+                    const clientPrincipal = azureData[0];
+                    const userData = {
+                        userId: clientPrincipal.user_id,
+                        name: clientPrincipal.user_claims.find(c => c.typ === "name")?.val || clientPrincipal.user_id,
+                        email: clientPrincipal.user_id // In EntraID spesso l'id è l'email
+                    };
 
-                console.log("Status ricevuto:", res.status);
-                const contentType = res.headers.get("content-type");
-                console.log("Content-Type ricevuto:", contentType);
+                    const backendUrl = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
+                    const regRes = await fetch(`${backendUrl}/api/auth/register`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(userData)
+                    });
 
-                if (res.ok && contentType && contentType.includes("application/json")) {
-                    const data = await res.json();
-                    console.log("Dati utente ricevuti:", data);
-
-                    if (data && Object.keys(data).length > 0) {
-                        setUser(data);
+                    if (regRes.ok) {
+                        setUser(userData);
                         setIsAuthenticated(true);
-                        console.log("Autenticazione COMPLETATA con successo");
-                    } else {
-                        console.warn("Dati ricevuti vuoti, imposto false");
-                        setIsAuthenticated(false);
                     }
                 } else {
-                    console.error("Fallito controllo header o status. OK:", res.ok, "CT:", contentType);
                     setIsAuthenticated(false);
                 }
             } catch (err) {
-                console.error("Errore autenticazione:", err.message);
+                console.error("Errore Bootstrapping Auth:", err);
                 setIsAuthenticated(false);
             } finally {
                 setLoading(false);
             }
         }
-
         bootstrapAuth();
     }, []);
 
