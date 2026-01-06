@@ -26,28 +26,19 @@ function parseEasyAuthPrincipal(req) {
  * In dev può usare un header x-dev-user passato dal frontend.
  */
 function authPrincipal(req, res, next) {
+  console.log("[authPrincipal] headers x-ms-client-principal:", req.headers["x-ms-client-principal"]);
+
   const principal = parseEasyAuthPrincipal(req);
+
+  console.log("[authPrincipal] parsed principal:", principal);
+
   if (principal?.external_id) {
     req.principal = principal;
     return next();
   }
 
-  if (isDevBypass) {
-    const raw = req.headers['x-dev-user'];
-    if (raw) {
-      try {
-        const p = JSON.parse(raw);
-        if (p.external_id && p.email) {
-          req.principal = p;
-          return next();
-        }
-      } catch (err) {
-        console.warn("[authPrincipal] invalid x-dev-user header", err);
-      }
-    }
-  }
-
-  return res.status(401).json({ error: 'Unauthorized' });
+  return res.status(401).json({ error: "Unauthorized (authPrincipal)" });
 }
 
 module.exports = { authPrincipal };
+
