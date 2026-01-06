@@ -15,20 +15,27 @@ export function AuthProvider({ children }) {
 
             try {
                 const API_URL = import.meta.env.VITE_API_URL;
+                console.log("Tentativo di autenticazione verso:", API_URL);
 
                 const res = await fetch(`${API_URL}/api/users/me`, {
                     credentials: "include",
                 });
 
+                console.log("Risposta server status:", res.status);
+
                 if (res.ok) {
                     const data = await res.json();
+                    console.log("Dati utente ricevuti:", data);
                     setUser(data);
                     setIsAuthenticated(true);
                 } else {
+                    const errorText = await res.text();
+                    console.warn("Autenticazione fallita. Dettagli:", errorText);
                     setUser(null);
                     setIsAuthenticated(false);
                 }
-            } catch {
+            } catch (err) {
+                console.error("Errore di rete durante bootstrapAuth:", err);
                 setUser(null);
                 setIsAuthenticated(false);
             } finally {
