@@ -12,12 +12,10 @@ async function upsertUserByExternalId({ external_id, email, name }) {
 
   if (rows.length) {
     const userId = rows[0].id;
-
     await db.query(
       "UPDATE users SET email = ?, display_name = COALESCE(?, display_name) WHERE id = ?",
       [email, name || null, userId]
     );
-
     return userId;
   }
 
@@ -25,7 +23,6 @@ async function upsertUserByExternalId({ external_id, email, name }) {
     "INSERT INTO users (external_id, email, display_name) VALUES (?, ?, ?)",
     [external_id, email, name || null]
   );
-
   return res.insertId;
 }
 
@@ -36,8 +33,16 @@ async function upsertUserByExternalId({ external_id, email, name }) {
  */
 async function requireUser(req, res, next) {
   try {
+    if (!req.principal && req.headers['x-nimbus-userid']) {
+      req.principal = {
+        external_id: req.headers['x-nimbus-userid'],
+        email: req.headers['x-nimbus-email'] || 'unknown@unisa.it',
+        name: req.headers['x-nimbus-username'] || 'User'
+      };
+    }
+
     if (!req.principal) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized (authPrincipal)" });
     }
 
     const { external_id, email, name } = req.principal;

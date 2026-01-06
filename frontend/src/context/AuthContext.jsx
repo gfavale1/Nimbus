@@ -26,12 +26,9 @@ export function AuthProvider({ children }) {
                         email: principal.userDetails
                     };
 
-                    const backendUrl = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
-                    await fetch(`${backendUrl}/api/auth/register`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(userData)
-                    });
+                    localStorage.setItem("nimbus_user_id", userData.userId);
+                    localStorage.setItem("nimbus_user_email", userData.email);
+                    localStorage.setItem("nimbus_user_name", userData.name);
 
                     setUser(userData);
                     setIsAuthenticated(true);

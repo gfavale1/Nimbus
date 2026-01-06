@@ -41,20 +41,15 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.post("/api/auth/register", async (req, res) => {
-  try {
-    const { userId, name, email } = req.body;
+app.post("/api/auth/register", (req, res) => {
+  const { userId, name, email } = req.body;
+  
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
 
-    console.log("Ricevuta richiesta registrazione per:", email);
-    
-    // const user = await User.findOneAndUpdate({ userId }, { name, email }, { upsert: true, new: true });
-    
-    res.status(200).json({ success: true, user: { userId, name, email } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  console.log(`Utente identificato: ${email}`);
+
+  res.status(200).json({ success: true, userId });
 });
-
 // Autenticazione
 // In produzione: EasyAuth + requireUser
 // In sviluppo: bypass EasyAuth (requireUser resta attivo)
