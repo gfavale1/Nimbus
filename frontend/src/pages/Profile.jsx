@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useMsalAuth } from "../hooks/useMsalAuth";
+import { useAuth } from "../hooks/useAuth";
 import { getAllNotes } from "../services/noteService";
 import { getAllTasks } from "../services/taskService";
 import http from "../api/http";
 
 export default function Profile() {
-  const { user, signOut, resetCache } = useMsalAuth();
+  const { user } = useAuth(); 
+  const signOut = () => { window.location.href = "/.auth/logout"; };
 
   const [recentNotes, setRecentNotes] = useState([]);
   const [recentTasks, setRecentTasks] = useState([]);
@@ -17,7 +18,6 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 🧩 Normalizzatore task
   const normalizeTasks = (payload) => {
     if (Array.isArray(payload)) return payload;
     if (payload?.data && Array.isArray(payload.data)) return payload.data;
@@ -36,8 +36,8 @@ export default function Profile() {
         setRecentNotes(Array.isArray(notes) ? notes.slice(0, 3) : []);
         setRecentTasks(tasks.slice(0, 3));
 
-        const res = await http.get("/api/settings/me");
-        setSettings(res.data || {});
+        const res = await http.get("/settings/me");
+        await http.put("/settings/me", settings);
       } catch (err) {
         console.error("Errore caricamento dati profilo:", err);
       }
@@ -49,7 +49,7 @@ export default function Profile() {
   const handleSave = async () => {
     try {
       setLoading(true);
-      await http.put("/api/settings/me", settings);
+      await http.put("/settings/me", settings);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {

@@ -20,7 +20,7 @@ export default function Settings() {
   async function loadSettings() {
     try {
       setLoading(true);
-      const { data } = await http.get("/api/settings/me");
+      const { data } = await http.get("/settings/me");
       setPrefs(data);
     } catch (err) {
       console.error("Errore nel caricamento impostazioni:", err);
@@ -32,7 +32,7 @@ export default function Settings() {
   async function handleSave() {
     try {
       setSaving(true);
-      await http.put("/api/settings/me", prefs);
+      await http.put("/settings/me", prefs);
       setMessage("Impostazioni salvate correttamente!");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
