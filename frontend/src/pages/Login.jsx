@@ -10,15 +10,18 @@ export default function Login() {
       <div style={styles.card}>
         <h1>Nimbus</h1>
 
+        const API_URL = import.meta.env.VITE_API_URL;
+
         <button
           onClick={() => {
             window.location.href =
-              `${API_URL}/.auth/login/aad` +
-              `?post_login_redirect_uri=${redirect}`;
+              `${API_URL}/.auth/login/aad?post_login_redirect_uri=` +
+              encodeURIComponent(window.location.origin + "/dashboard");
           }}
         >
           Accedi con Microsoft
         </button>
+
       </div>
     </div>
   );
