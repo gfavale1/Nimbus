@@ -1,15 +1,12 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMsalAuth } from "../hooks/useMsalAuth";
-import { useAuth } from "../context/AuthContext";
+import React from "react";
 
 export default function Login() {
+  const API_URL = import.meta.env.VITE_API_URL;
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
         <h1>Nimbus</h1>
-
-        const API_URL = import.meta.env.VITE_API_URL;
 
         <button
           onClick={() => {
@@ -22,6 +19,7 @@ export default function Login() {
     </div>
   );
 }
+
 const styles = {
   container: {
     background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #312e81 100%)",
