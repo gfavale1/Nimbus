@@ -8,7 +8,9 @@ function parseEasyAuthPrincipal(req) {
   if (!b64) return null;
 
   try {
-    const obj = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+    const obj = JSON.parse(
+      Buffer.from(b64, 'base64').toString('utf8')
+    );
 
     const claims = Object.fromEntries(
       (obj.claims || []).map(c => [c.typ, c.val])
@@ -16,19 +18,16 @@ function parseEasyAuthPrincipal(req) {
 
     return {
       external_id:
-        obj.userId ||
-        obj.user_id ||
-        claims.oid ||
-        claims.sub,
+        claims["http://schemas.microsoft.com/identity/claims/objectidentifier"],
 
       email:
         claims.preferred_username ||
-        claims.emailaddress ||
-        claims.upn,
+        claims.upn ||
+        claims.emailaddress,
 
       name:
         claims.name ||
-        claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
     };
   } catch (err) {
     console.error("[authPrincipal] parse error:", err);
@@ -57,6 +56,7 @@ function authPrincipal(req, res, next) {
 }
 
 module.exports = { authPrincipal };
+
 
 
 
