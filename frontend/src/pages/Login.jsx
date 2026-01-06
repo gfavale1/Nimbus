@@ -18,8 +18,6 @@ export default function Login() {
         >
           Accedi con Microsoft
         </button>
-          Accedi con Microsoft
-        </button>
       </div>
     </div>
   );
