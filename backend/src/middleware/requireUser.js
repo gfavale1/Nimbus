@@ -6,15 +6,15 @@ const db = require("../config/db");
  */
 async function upsertUserByExternalId({ external_id, email, name }) {
   const [rows] = await db.query(
-    "SELECT id FROM users WHERE external_id = ? LIMIT 1",
-    [external_id]
+    "SELECT id FROM users WHERE external_id = ? OR email = ? LIMIT 1",
+    [external_id, email]
   );
 
   if (rows.length) {
     const userId = rows[0].id;
     await db.query(
-      "UPDATE users SET email = ?, display_name = COALESCE(?, display_name) WHERE id = ?",
-      [email, name || null, userId]
+      "UPDATE users SET external_id = ?, email = ?, display_name = COALESCE(?, display_name) WHERE id = ?",
+      [external_id, email, name || null, userId]
     );
     return userId;
   }
