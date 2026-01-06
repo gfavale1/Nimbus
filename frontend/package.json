@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "vite --host 0.0.0.0",
-    "build": "npx vite build && cp staticwebapp.config.json dist/",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
