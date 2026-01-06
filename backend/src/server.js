@@ -10,7 +10,7 @@ require("dotenv").config({
 
 // Import dei middleware
 const requireUser = require("./middleware/requireUser");
-// const { authPrincipal } = require("./middleware/authPrincipal");
+const { authPrincipal } = require("./middleware/authPrincipal");
 const errorHandler = require("./middleware/errorHandler");
 
 // Import delle rotte
@@ -54,11 +54,11 @@ app.use(morgan("dev"));
 // Autenticazione
 // In produzione: EasyAuth + requireUser
 // In sviluppo: bypass EasyAuth (requireUser resta attivo)
-if (process.env.EASYAUTH_BYPASS_DEV !== "1") {
-  app.use(authPrincipal);
-} else {
-  console.log("Modalità DEV: bypass EasyAuth attivo - senno non mi apparo con autent.");
-}
+// if (process.env.EASYAUTH_BYPASS_DEV !== "1") {
+app.use(authPrincipal);
+//} else {
+//  console.log("Modalità DEV: bypass EasyAuth attivo - senno non mi apparo con autent.");
+// }
 
 // Tutte le API sotto /api richiedono utente autenticato
 app.use("/api", requireUser);
