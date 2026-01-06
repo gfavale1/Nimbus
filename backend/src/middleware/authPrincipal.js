@@ -17,6 +17,7 @@ function parseEasyAuthPrincipal(req) {
     return {
       external_id:
         obj.userId ||
+        obj.user_id ||
         claims.oid ||
         claims.sub,
 
@@ -56,5 +57,6 @@ function authPrincipal(req, res, next) {
 }
 
 module.exports = { authPrincipal };
+
 
 
