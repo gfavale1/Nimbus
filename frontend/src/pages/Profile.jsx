@@ -97,7 +97,6 @@ export default function Profile() {
           <div style={styles.toggleGroup}>
             {[
               ["Notifiche Email", "notify_email"],
-              ["Notifiche Push", "notify_push"],
               ["Promemoria Attività", "notify_reminders"],
             ].map(([label, key]) => (
               <label key={key} style={styles.toggleRow}>

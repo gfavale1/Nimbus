@@ -8,14 +8,13 @@ export default function NoteCard({
   onShare,
   onUpload,
   onDeleteAttachment,
-  onTagClick, // Riceve la funzione per filtrare dalla pagina principale
+  onTagClick, 
 }) {
   const [attachments, setAttachments] = useState([]);
 
   const readOnly = note.readOnly || note.role === "viewer";
   const canDelete = note.role === "editor" || note.role === "owner";
 
-  // Mostra "Condivisa da" solo per note condivise (o se il campo è presente)
   const sharedBy =
     note.sharedByLabel ||
     note.owner_name ||
@@ -45,18 +44,17 @@ export default function NoteCard({
     <div style={styles.card}>
       {/* Header */}
       <div style={styles.headerRow}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={styles.headerLeft}>
           <h3 style={styles.title}>{note.title || "Senza titolo"}</h3>
 
           {isSharedNote && (
             <div style={styles.sharedByRow}>
               <span style={styles.sharedByBadge}>
-                Condivisa da: <strong>{sharedBy}</strong>
+                Condivisa da:&nbsp;<strong>{sharedBy}</strong>
               </span>
+
               {note.role && note.role !== "owner" && (
-                <span style={styles.roleBadge}>
-                  Ruolo: {note.role}
-                </span>
+                <span style={styles.roleBadge}>Ruolo: {note.role}</span>
               )}
             </div>
           )}
@@ -75,23 +73,25 @@ export default function NoteCard({
       <div style={styles.tagsWrapper}>
         {note.tags && note.tags.length > 0 ? (
           <div style={styles.tagsContainer}>
-            {(Array.isArray(note.tags) ? note.tags : note.tags.split(",")).map((tag, idx) => {
-              const tagName = typeof tag === "object" ? tag.name : tag;
-              if (!tagName) return null;
-              const cleanTagName = tagName.trim();
+            {(Array.isArray(note.tags) ? note.tags : note.tags.split(",")).map(
+              (tag, idx) => {
+                const tagName = typeof tag === "object" ? tag.name : tag;
+                if (!tagName) return null;
+                const cleanTagName = tagName.trim();
 
-              return (
-                <span
-                  key={idx}
-                  style={styles.tagBadge}
-                  onClick={() => onTagClick && onTagClick(cleanTagName)}
-                  title={`Filtra per #${cleanTagName}`}
-                >
-                  <span style={styles.hashSymbol}>#</span>
-                  {cleanTagName}
-                </span>
-              );
-            })}
+                return (
+                  <span
+                    key={idx}
+                    style={styles.tagBadge}
+                    onClick={() => onTagClick && onTagClick(cleanTagName)}
+                    title={`Filtra per #${cleanTagName}`}
+                  >
+                    <span style={styles.hashSymbol}>#</span>
+                    {cleanTagName}
+                  </span>
+                );
+              }
+            )}
           </div>
         ) : (
           <div style={styles.noTagsText}>Nessun tag presente</div>
@@ -123,6 +123,7 @@ export default function NoteCard({
                     target="_blank"
                     rel="noreferrer"
                     style={styles.attachmentDownloadLink}
+                    title={att.file_name}
                   >
                     {att.file_name}
                   </a>
@@ -199,12 +200,23 @@ const styles = {
     animation: "fadeIn 0.4s ease-out",
     overflow: "hidden",
   },
+
   headerRow: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: "0.5rem",
+    gap: "12px",
   },
+
+  headerLeft: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    minWidth: 0,
+    flex: 1,
+  },
+
   title: {
     fontSize: "1.2rem",
     fontWeight: 600,
@@ -213,18 +225,48 @@ const styles = {
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
+
   readOnlyBadge: {
     background: "rgba(255,255,255,0.2)",
     padding: "4px 8px",
     borderRadius: "6px",
     fontSize: "0.75rem",
     color: "rgba(255,255,255,0.8)",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
+
+  sharedByRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    alignItems: "center",
+  },
+
+  sharedByBadge: {
+    background: "rgba(59,130,246,0.22)",
+    border: "1px solid rgba(59,130,246,0.35)",
+    padding: "4px 8px",
+    borderRadius: "8px",
+    fontSize: "0.75rem",
+    color: "rgba(255,255,255,0.95)",
+  },
+
+  roleBadge: {
+    background: "rgba(16,185,129,0.18)",
+    border: "1px solid rgba(16,185,129,0.30)",
+    padding: "4px 8px",
+    borderRadius: "8px",
+    fontSize: "0.75rem",
+    color: "rgba(255,255,255,0.9)",
+  },
+
   content: {
     color: "rgba(255,255,255,0.9)",
     fontSize: "0.95rem",
     marginBottom: "1rem",
   },
+
   attachments: { marginTop: "10px" },
   sectionTitle: { fontSize: "0.9rem", marginBottom: "6px" },
 
@@ -244,6 +286,7 @@ const styles = {
 
   hiddenInput: { display: "none" },
   attachmentList: { listStyle: "none", padding: 0, margin: 0 },
+
   attachmentItem: {
     background: "rgba(255,255,255,0.08)",
     padding: "8px 15px",
@@ -253,8 +296,9 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     fontSize: "0.9rem",
-    gap: '10px',
+    gap: "10px",
   },
+
   attachmentDownloadLink: {
     color: "white",
     backgroundColor: "rgba(59,130,246,0.5)",
@@ -262,15 +306,17 @@ const styles = {
     borderRadius: "6px",
     textDecoration: "none",
     flexGrow: 1,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
   },
+
   noAttachmentLink: {
     color: "rgba(255,255,255,0.6)",
     flexGrow: 1,
     fontStyle: "italic",
   },
+
   deleteAttachmentBtn: {
     background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
     border: "none",
@@ -281,6 +327,7 @@ const styles = {
     fontSize: "0.85rem",
     fontWeight: "bold",
   },
+
   footer: {
     marginTop: "16px",
     borderTop: "1px solid rgba(255,255,255,0.15)",
@@ -289,6 +336,7 @@ const styles = {
     flexDirection: "column",
     gap: "10px",
   },
+
   date: { fontSize: "0.75rem", opacity: 0.8 },
   actions: { display: "flex", gap: "8px", justifyContent: "flex-end" },
 
@@ -302,6 +350,7 @@ const styles = {
     fontSize: "0.9rem",
     fontWeight: "600",
   },
+
   deleteBtn: {
     background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
     padding: "6px 10px",
@@ -318,15 +367,18 @@ const styles = {
     fontSize: "0.9rem",
     fontStyle: "italic",
   },
+
   tagsWrapper: {
     marginTop: "14px",
     marginBottom: "10px",
   },
+
   tagsContainer: {
     display: "flex",
     flexWrap: "wrap",
     gap: "8px",
   },
+
   tagBadge: {
     background: "#3955a6",
     color: "#ffffff",
@@ -340,11 +392,13 @@ const styles = {
     border: "none",
     cursor: "pointer",
   },
+
   hashSymbol: {
     marginRight: "4px",
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: "1rem",
   },
+
   noTagsText: {
     fontSize: "0.9rem",
     color: "rgba(255, 255, 255, 0.5)",
