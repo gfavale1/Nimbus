@@ -50,6 +50,17 @@ module.exports = {
   },
 
   /**
+     * Elimina una nota e tutti i dati correlati (storico e tag).
+     * * @param {number} id - ID della nota da eliminare
+     * @returns {Promise<Object>} Esito dell'operazione
+     */
+  async remove(id) {
+    const [res] = await db.query('DELETE FROM notes WHERE id = ?', [id]);
+
+    return res;
+  },
+
+  /**
    * Crea una nuova nota.
    *
    * @param {Object} data

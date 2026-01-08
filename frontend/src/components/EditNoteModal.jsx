@@ -47,7 +47,11 @@ export default function EditNoteModal({ note, onClose, onSaved }) {
         await updateNote(note.id, { title, content });
         await updateNoteTags(note.id, tags);
       } else {
-        await createNote({ title, content, tags });
+        new note = await createNote({ title, content, tags });
+
+        if(tags && tags.trim() !== "") {
+          await updateNoteTags(note.id, tags);
+        }
       }
 
       onSaved?.();
