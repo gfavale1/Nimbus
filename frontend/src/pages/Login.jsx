@@ -3,12 +3,8 @@ import React from "react";
 export default function Login() {
   const handleLogin = () => {
     // Reindirizzamento al flusso EasyAuth di Azure
-    const base = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
-
-    console.log("[LOGIN]:", base);
-
-    const redirect = encodeURIComponent(`${window.location.origin}/dashboard`);
-    window.location.href = `${base}/.auth/login/aad?post_login_redirect_uri=${redirect}`;
+    window.location.href =
+      "/.auth/login/aad?post_login_redirect_uri=/dashboard&prompt=select_account";
   };
 
   const handleReset = () => {
@@ -25,8 +21,8 @@ export default function Login() {
           Il tuo hub intelligente per note e attività
         </p>
 
-        <button
-          onClick={handleLogin}
+        <button 
+          onClick={handleLogin} 
           style={styles.loginButton}
           onMouseOver={(e) => e.target.style.backgroundColor = "#1d4ed8"}
           onMouseOut={(e) => e.target.style.backgroundColor = "#2563eb"}
@@ -34,8 +30,8 @@ export default function Login() {
           Accedi con Microsoft
         </button>
 
-        <button
-          onClick={handleReset}
+        <button 
+          onClick={handleReset} 
           style={styles.resetButton}
           onMouseOver={(e) => e.target.style.backgroundColor = "#f1f5f9"}
           onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}

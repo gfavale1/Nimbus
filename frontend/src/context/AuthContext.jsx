@@ -14,12 +14,7 @@ export function AuthProvider({ children }) {
             hasBootstrapped.current = true;
 
             try {
-                const base = import.meta.env.VITE_API_URL;
-
-                const res = await fetch(`${base}/.auth/me`, {
-                    credentials: "include",
-                });
-
+                const res = await fetch("/.auth/me");
                 const data = await res.json();
 
                 const principal = data.clientPrincipal || (data[0] ? data[0] : null);
