@@ -156,7 +156,7 @@ const styles = {
   },
 
   select: {
-    width: "100%",
+    width: "94%",
     padding: "10px 14px",
     borderRadius: "8px",
     border: "1px solid rgba(255,255,255,0.25)",

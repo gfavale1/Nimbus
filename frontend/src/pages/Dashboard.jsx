@@ -268,15 +268,36 @@ export default function Dashboard() {
           <h2 style={styles.subTitle}>Ultime Task</h2>
           {tasks.length ? (
             <ul style={styles.list}>
-              {tasks.slice(0, 5).map((t) => (
-                <li key={t.id} style={styles.listItem}>
-                  <strong>{t.title}</strong>
-                  <p style={styles.textSmall}>
-                    Stato: {normalizeStatus(t)} | Scadenza:{" "}
-                    {t.due_date ? new Date(t.due_date).toLocaleDateString() : "N/D"}
-                  </p>
-                </li>
-              ))}
+              {tasks.slice(0, 5).map((t) => {
+                const technicalStatus = normalizeStatus(t);
+
+                let displayStatus = "";
+                let statusColor = "";
+
+                switch (technicalStatus) {
+                  case "done":
+                    displayStatus = "Completata!";
+                    statusColor = "#34d399"; 
+                    break;
+                  case "in_progress":
+                    displayStatus = "In corso!";
+                    statusColor = "#facc15"; 
+                    break;
+                  default:
+                    displayStatus = "Da fare!";
+                    statusColor = "#f87171"; 
+                }
+
+                return (
+                  <li key={t.id} style={styles.listItem}>
+                    <strong>{t.title}</strong>
+                    <p style={styles.textSmall}>
+                      Stato: <span style={{ color: statusColor, fontWeight: "bold" }}>{displayStatus}</span> | Scadenza:{" "}
+                      {t.due_date ? new Date(t.due_date).toLocaleDateString() : "N/D"}
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p style={styles.empty}>Nessuna task trovata</p>
