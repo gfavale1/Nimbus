@@ -251,6 +251,11 @@ export default function Dashboard() {
                   <p style={styles.textSmall}>
                     {note.content?.slice(0, 80) || "—"}
                   </p>
+                  <p style={{ ...styles.textSmall, color: "#94a3b8", marginTop: "4px", fontSize: "0.75rem" }}>
+                    Ultima modifica: {note.updated_at
+                      ? new Date(note.updated_at).toLocaleString()
+                      : (note.created_at ? new Date(note.created_at).toLocaleString() : "Data N/D")}
+                  </p>
                 </li>
               ))}
             </ul>
