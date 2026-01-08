@@ -6,7 +6,7 @@ export default function Logout() {
     const doLogout = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const base = import.meta.env.VITE_API_URL;
+      const base = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
 
       console.log("[LOGOUT]:", base);
 

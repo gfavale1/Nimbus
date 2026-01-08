@@ -3,7 +3,7 @@ import React from "react";
 export default function Login() {
   const handleLogin = () => {
     // Reindirizzamento al flusso EasyAuth di Azure
-    const base = import.meta.env.VITE_API_URL;
+    const base = "https://nimbus-app-ashhgbbrdvhjdgh6.italynorth-01.azurewebsites.net";
 
     console.log("[LOGIN]:", base);
 
