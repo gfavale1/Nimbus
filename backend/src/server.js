@@ -1,12 +1,27 @@
 const path = require("path");
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
 
 // Caricamento .env
 require("dotenv").config({
   path: path.resolve(__dirname, "../.env"),
 });
+
+// Per abilitarmi appinsights  che non ho ricevuto richieste
+const appInsights = require('applicationinsights');
+
+appInsights.setup("process.env.APPLICATIONINSIGHTS_CONNECTION_STRING")
+    .setAutoDependencyCorrelation(true)
+    .setAutoCollectRequests(true)
+    .setAutoCollectPerformance(true, true)
+    .setAutoCollectExceptions(true)
+    .setAutoCollectDependencies(true)
+    .setAutoCollectConsole(true)
+    .setUseDiskRetryCaching(true)
+    .setSendLiveMetrics(true) 
+    .start();
+
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
 
 // Import dei middleware
 const requireUser = require("./middleware/requireUser");
@@ -50,16 +65,8 @@ app.post("/api/auth/register", (req, res) => {
 
   res.status(200).json({ success: true, userId });
 });
-// Autenticazione
-// In produzione: EasyAuth + requireUser
-// In sviluppo: bypass EasyAuth (requireUser resta attivo)
-// if (process.env.EASYAUTH_BYPASS_DEV !== "1") {
-app.use("/api", authPrincipal);
-//} else {
-//  console.log("Modalità DEV: bypass EasyAuth attivo - senno non mi apparo con autent.");
-// }
 
-// Tutte le API sotto /api richiedono utente autenticato
+app.use("/api", authPrincipal);
 app.use("/api", requireUser);
 
 // Rotte delle varie api
@@ -82,7 +89,7 @@ app.use("/api/ai", aiRoutes);
 app.use(errorHandler);
 
 // Avvio il server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Nimbus API listening on port ${PORT}`);
