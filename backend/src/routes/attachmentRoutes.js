@@ -13,7 +13,7 @@ const router = express.Router();
 // Upload in memoria (usato per Azure Blob Storage)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 } // 20 MB
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB
 });
 
 // Upload allegato a una nota (owner / editor)

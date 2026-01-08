@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../context/AuthContext";
 import { getAllNotes, getSharedNotes } from "../services/noteService";
 import { getAllTasks, createTask } from "../services/taskService";
 import EditNoteModal from "../components/EditNoteModal";

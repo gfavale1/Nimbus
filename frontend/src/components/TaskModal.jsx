@@ -11,9 +11,34 @@ export default function TaskModal({ task, onSave, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const titleTrim = title.trim();
+    if (!titleTrim) {
+      alert("Inserisci un titolo per l'attività.");
+      return;
+    }
+
+    // input date dà già YYYY-MM-DD ma controlliamo
+    if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+      alert("La data di scadenza non è valida.");
+      return;
+    }
+
+    const allowedPriority = ["low", "medium", "high"];
+    const allowedStatus = ["todo", "in_progress", "done"];
+
+    if (!allowedPriority.includes(priority)) {
+      alert("Priorità non valida.");
+      return;
+    }
+    if (!allowedStatus.includes(status)) {
+      alert("Stato non valido.");
+      return;
+    }
+
     onSave({
       ...task,
-      title,
+      title: titleTrim,
       description,
       priority,
       status,
@@ -29,7 +54,6 @@ export default function TaskModal({ task, onSave, onClose }) {
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Titolo */}
           <label style={styles.label}>Titolo</label>
           <input
             type="text"
@@ -37,9 +61,9 @@ export default function TaskModal({ task, onSave, onClose }) {
             onChange={(e) => setTitle(e.target.value)}
             style={styles.input}
             required
+            maxLength={120}
           />
 
-          {/* Descrizione */}
           <label style={styles.label}>Descrizione</label>
           <textarea
             value={description}
@@ -47,7 +71,6 @@ export default function TaskModal({ task, onSave, onClose }) {
             style={styles.textarea}
           />
 
-          {/* Scadenza */}
           <label style={styles.label}>Scadenza</label>
           <input
             type="date"
@@ -56,31 +79,40 @@ export default function TaskModal({ task, onSave, onClose }) {
             style={styles.input}
           />
 
-          {/* Priorità */}
           <label style={styles.label}>Priorità</label>
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
             style={styles.select}
           >
-            <option value="low" style={optionStyle}>Bassa</option>
-            <option value="medium" style={optionStyle}>Media</option>
-            <option value="high" style={optionStyle}>Alta</option>
+            <option value="low" style={optionStyle}>
+              Bassa
+            </option>
+            <option value="medium" style={optionStyle}>
+              Media
+            </option>
+            <option value="high" style={optionStyle}>
+              Alta
+            </option>
           </select>
 
-          {/* Stato */}
           <label style={styles.label}>Stato</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
             style={styles.select}
           >
-            <option value="todo" style={optionStyle}>Da fare</option>
-            <option value="in_progress" style={optionStyle}>In corso</option>
-            <option value="done" style={optionStyle}>Completata</option>
+            <option value="todo" style={optionStyle}>
+              Da fare
+            </option>
+            <option value="in_progress" style={optionStyle}>
+              In corso
+            </option>
+            <option value="done" style={optionStyle}>
+              Completata
+            </option>
           </select>
 
-          {/* Azioni */}
           <div style={styles.actions}>
             <button type="submit" style={styles.primaryBtn}>
               Salva

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  getNoteShares,    // Carica la lista delle persone con accesso
-  removeShare,      // Esegue la DELETE sul backend
-} from "../services/noteService";
+import { getNoteShares, removeShare } from "../services/noteService";
 import api from "../api/http";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ALLOWED_ROLES = ["viewer", "editor"]; // mantieni solo quelli che supporti davvero
 
 export default function ShareModal({ noteId, onClose }) {
   const [shares, setShares] = useState([]);
@@ -12,32 +12,42 @@ export default function ShareModal({ noteId, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Funzione per caricare la lista utenti
   const loadShares = async () => {
     try {
+      setError("");
       const data = await getNoteShares(noteId);
-      console.log("Condivisioni ricevute:", data);
-      setShares(data || []);
+      setShares(Array.isArray(data) ? data : data?.rows || []);
     } catch (err) {
       console.error("Errore caricamento condivisioni:", err);
-      // Evitiamo l'alert se il modale si sta chiudendo
       if (noteId) setError("Impossibile caricare la lista degli accessi.");
     }
   };
 
   useEffect(() => {
     if (noteId) loadShares();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noteId]);
 
   const handleAdd = async () => {
-    if (!email.trim()) return;
+    const emailTrim = email.trim().toLowerCase();
+
+    if (!emailTrim) return;
+
+    if (!EMAIL_REGEX.test(emailTrim)) {
+      setError("Inserisci un indirizzo email valido.");
+      return;
+    }
+
+    if (!ALLOWED_ROLES.includes(role)) {
+      setError("Ruolo non valido.");
+      return;
+    }
 
     try {
       setLoading(true);
       setError("");
 
-      // 1. Trova l'utente tramite email
-      const resUser = await api.get(`/users/by-email/${email}`);
+      const resUser = await api.get(`/users/by-email/${encodeURIComponent(emailTrim)}`);
       const user = resUser.data;
 
       if (!user?.id) {
@@ -45,19 +55,18 @@ export default function ShareModal({ noteId, onClose }) {
         return;
       }
 
-      // 2. Crea la condivisione
       await api.post(`/notes/${noteId}/shares`, {
         user_id: user.id,
         role,
       });
 
-      // 3. Reset e ricarica lista
       setEmail("");
       setRole("viewer");
-      loadShares(); // Ricarichiamo dal server per avere i nomi aggiornati
+      await loadShares();
     } catch (err) {
       if (err.response?.status === 404) setError("L'utente non esiste.");
-      else if (err.response?.status === 403) setError("Non hai i permessi di proprietario.");
+      else if (err.response?.status === 403)
+        setError("Non hai i permessi di proprietario.");
       else setError("Errore durante la condivisione.");
     } finally {
       setLoading(false);
@@ -65,12 +74,12 @@ export default function ShareModal({ noteId, onClose }) {
   };
 
   const handleRemove = async (sharedUserId) => {
-    if (!window.confirm("Sei sicuro di voler revocare l'accesso a questo utente?")) return;
+    if (!window.confirm("Sei sicuro di voler revocare l'accesso a questo utente?"))
+      return;
 
     try {
       await removeShare(noteId, sharedUserId);
-      // Aggiorna la UI rimuovendo l'utente filtrando la lista locale
-      setShares((prev) => prev.filter((s) => (s.user_id || s.id) !== sharedUserId));
+      setShares((prev) => prev.filter((s) => (s.user_id ?? s.id) !== sharedUserId));
     } catch (err) {
       console.error("Errore rimozione:", err);
       alert("Errore durante la rimozione del permesso.");
@@ -80,75 +89,87 @@ export default function ShareModal({ noteId, onClose }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <h2 style={styles.title}>Gestisci Accessi</h2>
+        <div style={styles.header}>
+          <h2 style={styles.title}>Condivisione Nota</h2>
+          <button onClick={onClose} style={styles.closeBtn} aria-label="Chiudi">
+            ✕
+          </button>
+        </div>
 
-        {error && <p style={styles.error}>{error}</p>}
-
-        <div style={styles.addSection}>
+        <div style={styles.section}>
+          <label style={styles.label}>Email utente</label>
           <input
-            type="email"
-            placeholder="Email dell'utente..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={styles.input}
+            placeholder="utente@dominio.com"
+            disabled={loading}
           />
 
+          <label style={styles.label}>Ruolo</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
             style={styles.select}
+            disabled={loading}
           >
-            <option value="viewer" style={optionStyle}>
-              Visualizzatore (Viewer)
-            </option>
-            <option value="editor" style={optionStyle}>
-              Editor
-            </option>
+            <option value="viewer">Viewer</option>
+            <option value="editor">Editor</option>
           </select>
+
+          {error && <div style={styles.error}>{error}</div>}
 
           <div style={styles.actions}>
             <button
-              onClick={handleAdd}
               style={styles.primaryBtn}
+              onClick={handleAdd}
               disabled={loading}
             >
-              {loading ? "Aggiunta..." : "Aggiungi"}
+              {loading ? "..." : "Condividi"}
             </button>
-            <button onClick={onClose} style={styles.secondaryBtn}>
+            <button style={styles.secondaryBtn} onClick={onClose} disabled={loading}>
               Chiudi
             </button>
           </div>
         </div>
 
-        <hr style={styles.divider} />
+        <div style={styles.section}>
+          <h3 style={styles.subtitle}>Accessi attuali</h3>
 
-        <h3 style={styles.subTitle}>Utenti con accesso</h3>
-
-        <div style={styles.listContainer}>
           {shares.length === 0 ? (
-            <p style={styles.emptyText}>Questa nota non è ancora condivisa con nessuno.</p>
+            <p style={styles.empty}>Nessun utente condiviso.</p>
           ) : (
-            <ul style={styles.list}>
+            <div style={styles.list}>
               {shares.map((s) => {
-                const userId = s.user_id || s.id;
+                const sharedUserId = s.user_id ?? s.id;
+                const label =
+                  s.email ||
+                  s.user_email ||
+                  s.userEmail ||
+                  s.name ||
+                  s.username ||
+                  s.user_name ||
+                  `User #${sharedUserId}`;
+                const r = s.role || "viewer";
+
                 return (
-                  <li key={userId} style={styles.listItem}>
-                    <div style={styles.userInfo}>
-                      <span style={styles.userName}>{s.display_name || s.name || "Utente"}</span>
-                      <span style={styles.userEmail}>{s.email}</span>
-                      <span style={styles.userRole}>— {s.role}</span>
+                  <div key={sharedUserId} style={styles.item}>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={styles.itemMain}>{label}</span>
+                      <small style={styles.itemSub}>Ruolo: {r}</small>
                     </div>
+
                     <button
-                      style={styles.removeBtn}
-                      onClick={() => handleRemove(userId)}
-                      title="Revoca Accesso"
+                      style={styles.dangerBtn}
+                      onClick={() => handleRemove(sharedUserId)}
+                      disabled={loading}
                     >
                       Revoca
                     </button>
-                  </li>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           )}
         </div>
       </div>

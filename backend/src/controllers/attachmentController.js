@@ -11,6 +11,7 @@ const {
   generateReadSasUrl
 } = require("../services/blobService");
 const { ensureNoteRole } = require("../services/permissionService");
+const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /**
  * POST /api/notes/:noteId/attachments
@@ -22,6 +23,10 @@ async function uploadNoteAttachment(req, res, next) {
 
     if (!req.file) {
       return res.status(400).json({ error: "File mancante" });
+    }
+
+    if (req.file.size > MAX_SIZE) {
+      return res.status(413).json({ error: "File troppo grande (max 10 MB)" });
     }
 
     await ensureNoteRole(noteId, userId, "editor");

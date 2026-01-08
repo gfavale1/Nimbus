@@ -59,8 +59,8 @@ export default function Notes() {
     }, [authLoading, user, refreshKey]);
 
     const handleTagClick = (tagName) => {
-        setSearch(tagName); 
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        setSearch(tagName);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSubmit = async (e) => {
@@ -111,13 +111,22 @@ export default function Notes() {
         }
     };
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
     const handleFileChange = async (noteId, e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (file.size > MAX_FILE_SIZE) {
+            alert("File troppo grande: massimo 10 MB.");
+            e.target.value = "";
+            return;
+        }
+
         try {
             await uploadAttachment(noteId, file);
             await sleep(100);
-            setRefreshKey(prev => prev + 1);
+            setRefreshKey((prev) => prev + 1);
         } catch (err) {
             console.error(err);
             alert("Errore upload allegato");

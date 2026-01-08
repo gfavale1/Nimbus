@@ -11,8 +11,20 @@ export default function NoteCard({
   onTagClick, // Riceve la funzione per filtrare dalla pagina principale
 }) {
   const [attachments, setAttachments] = useState([]);
+
   const readOnly = note.readOnly || note.role === "viewer";
   const canDelete = note.role === "editor" || note.role === "owner";
+
+  // Mostra "Condivisa da" solo per note condivise (o se il campo è presente)
+  const sharedBy =
+    note.sharedByLabel ||
+    note.owner_name ||
+    note.owner_email ||
+    note.shared_by_name ||
+    note.shared_by_email ||
+    null;
+
+  const isSharedNote = note.role !== "owner" && !!sharedBy;
 
   useEffect(() => {
     if (!note.id) return;
@@ -33,7 +45,23 @@ export default function NoteCard({
     <div style={styles.card}>
       {/* Header */}
       <div style={styles.headerRow}>
-        <h3 style={styles.title}>{note.title || "Senza titolo"}</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <h3 style={styles.title}>{note.title || "Senza titolo"}</h3>
+
+          {isSharedNote && (
+            <div style={styles.sharedByRow}>
+              <span style={styles.sharedByBadge}>
+                Condivisa da: <strong>{sharedBy}</strong>
+              </span>
+              {note.role && note.role !== "owner" && (
+                <span style={styles.roleBadge}>
+                  Ruolo: {note.role}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
         {readOnly && <span style={styles.readOnlyBadge}>Solo lettura</span>}
       </div>
 
@@ -48,7 +76,7 @@ export default function NoteCard({
         {note.tags && note.tags.length > 0 ? (
           <div style={styles.tagsContainer}>
             {(Array.isArray(note.tags) ? note.tags : note.tags.split(",")).map((tag, idx) => {
-              const tagName = typeof tag === 'object' ? tag.name : tag;
+              const tagName = typeof tag === "object" ? tag.name : tag;
               if (!tagName) return null;
               const cleanTagName = tagName.trim();
 
@@ -122,9 +150,7 @@ export default function NoteCard({
       <div style={styles.footer}>
         <small style={styles.date}>
           Ultima modifica:{" "}
-          {note.updated_at
-            ? new Date(note.updated_at).toLocaleString()
-            : "—"}
+          {note.updated_at ? new Date(note.updated_at).toLocaleString() : "—"}
         </small>
 
         <div style={styles.actions}>
