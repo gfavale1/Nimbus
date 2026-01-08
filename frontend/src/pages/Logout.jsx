@@ -6,7 +6,12 @@ export default function Logout() {
     const doLogout = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      window.location.href = "/.auth/logout?post_logout_redirect_uri=/login";
+      const base = import.meta.env.VITE_API_URL;
+
+      console.log("[LOGOUT]:", base);
+
+      const redirect = encodeURIComponent(`${window.location.origin}/login`);
+      window.location.href = `${base}/.auth/logout?post_logout_redirect_uri=${redirect}`;
     };
 
     doLogout();

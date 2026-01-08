@@ -8,7 +8,7 @@ require("dotenv").config({
 // Per abilitarmi appinsights  che non ho ricevuto richieste
 const appInsights = require('applicationinsights');
 
-appInsights.setup("process.env.APPLICATIONINSIGHTS_CONNECTION_STRING")
+appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
     .setAutoDependencyCorrelation(true)
     .setAutoCollectRequests(true)
     .setAutoCollectPerformance(true, true)
