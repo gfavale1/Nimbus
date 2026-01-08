@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 export default function Logout() {
   useEffect(() => {
-    const doLogout = async () => {
+     const doLogout = async () => {
+      logout();
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      window.location.href = "/.auth/logout?post_logout_redirect_uri=/login";
+      const redirect = encodeURIComponent(`${window.location.origin}/login`);
+      window.location.href = `/.auth/logout?post_logout_redirect_uri=${redirect}`;
     };
 
-    doLogout();
+    doLogout(logout);
   }, []);
 
 
