@@ -9,13 +9,13 @@ export default function Profile() {
 
   // Funzione di Logout ufficiale Azure + pulizia locale
   const signOut = () => { 
-    sessionstorage.clear(); 
+    sessionStorage.clear(); 
     window.location.href = "/.auth/logout?post_logout_redirect_uri=/"; 
   };
 
   // Funzione per pulire la cache (quella che causava l'errore perché non ce stava)
   const resetCache = () => {
-    sessionstorage.clear();
+    sessionStorage.clear();
     window.location.reload();
   };
 
