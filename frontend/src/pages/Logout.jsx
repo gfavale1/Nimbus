@@ -2,16 +2,32 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Logout() {
-  useEffect(() => {
-     const doLogout = async () => {
-      logout();
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const redirect = encodeURIComponent(`${window.location.origin}/login`);
-      window.location.href = `/.auth/logout?post_logout_redirect_uri=${redirect}`;
-    };
+  const { instance } = useMsal();
+  const navigate = useNavigate();
 
-    doLogout(logout);
-  }, []);
+  useEffect(() => {
+  let isMounted = true;
+
+  const doLogout = async () => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      if (isMounted) {
+        await instance.logoutPopup({
+          account: instance.getActiveAccount(),
+          postLogoutRedirectUri: window.location.origin,
+        });
+        navigate("/login", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+      if (isMounted) navigate("/login", { replace: true });
+    }
+  };
+
+  doLogout();
+  return () => { isMounted = false; }; 
+}, [instance, navigate]);
 
 
   return (
