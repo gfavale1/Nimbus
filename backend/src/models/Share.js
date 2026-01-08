@@ -97,14 +97,17 @@ async function listSharesForNote(noteId) {
 async function listNotesSharedWithUser(userId) {
   const [rows] = await db.query(
     `SELECT
-        n.id AS note_id,
+        n.id,                   
+        n.id AS note_id, 
         n.title,
         n.content,
         n.user_id AS owner_id,
+        n.created_at,           
+        n.updated_at,           
         u.display_name AS owner_name,
         u.email AS owner_email,
         ns.role,
-        ns.created_at,
+        ns.created_at AS shared_at,
         GROUP_CONCAT(t.name) AS tags
      FROM note_shares ns
      JOIN notes n ON n.id = ns.note_id
@@ -113,7 +116,7 @@ async function listNotesSharedWithUser(userId) {
      LEFT JOIN tags t ON nt.tag_id = t.id
      WHERE ns.shared_with_user_id = ?
      GROUP BY n.id, ns.role, u.display_name, u.email, ns.created_at
-     ORDER BY ns.created_at DESC`,
+     ORDER BY n.updated_at DESC`, 
     [userId]
   );
 
