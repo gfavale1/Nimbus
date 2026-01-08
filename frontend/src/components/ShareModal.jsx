@@ -28,6 +28,11 @@ export default function ShareModal({ noteId, onClose }) {
     if (noteId) loadShares();
   }, [noteId]);
 
+  const normalizeEmail = (v) => (v || "").trim().toLowerCase();
+  const shareEmailFromRow = (s) =>
+    normalizeEmail(s.email || s.user_email || s.userEmail || s.userEmailAddress);
+
+
   const handleAdd = async () => {
     const emailTrim = email.trim().toLowerCase();
 
@@ -45,6 +50,13 @@ export default function ShareModal({ noteId, onClose }) {
       setError("Ruolo non valido.");
       return;
     }
+
+    const alreadyShared = shares.some((s) => shareEmailFromRow(s) === emailTrim);
+      if (alreadyShared) {
+        setError("Questo utente ha già accesso a questa nota.");
+        return;
+      }
+
 
     try {
       setLoading(true);
@@ -153,7 +165,12 @@ export default function ShareModal({ noteId, onClose }) {
 
             <button
               style={styles.secondaryBtn}
-              onClick={onClose}
+              onClick={() => {
+                setError("");
+                setEmail("");
+                setRole("viewer");
+                onClose();
+              }}
               disabled={loading}
             >
               Chiudi
