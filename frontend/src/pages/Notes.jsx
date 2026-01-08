@@ -1,319 +1,415 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 import {
-    getAllNotes,
-    getSharedNotes,
-    createNote,
-    updateNote,
-    deleteNote,
-    updateNoteTags,
+  getAllNotes,
+  getSharedNotes,
+  createNote,
+  updateNote,
+  deleteNote,
+  updateNoteTags,
 } from "../services/noteService";
 
-import {
-    uploadAttachment,
-    deleteAttachment,
-} from "../services/attachmentService";
+import { uploadAttachment, deleteAttachment } from "../services/attachmentService";
 
 import NoteCard from "../components/NoteCard";
 import EditNoteModal from "../components/EditNoteModal";
 import ShareModal from "../components/ShareModal";
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const NOTE_TITLE_MAX = 80;
+const NOTE_CONTENT_MAX = 20000; // opzionale: evita contenuti enormi
+const TAG_MAX_LEN = 24;
+const MAX_TAGS = 15;
+
+// Tag consentiti: lettere/numeri/underscore/trattino (niente #, niente spazi)
+const TAG_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+function parseAndValidateTags(raw) {
+  const input = (raw ?? "").trim();
+
+  if (!input) return { ok: true, tags: [] };
+
+  // Split su virgole
+  const parts = input
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  if (parts.length > MAX_TAGS) {
+    return { ok: false, error: `Troppi tag: massimo ${MAX_TAGS}.` };
+  }
+
+  const normalized = [];
+  const seen = new Set();
+
+  for (const t of parts) {
+    // vieta #tag
+    if (t.startsWith("#")) {
+      return {
+        ok: false,
+        error:
+          "Formato tag non valido: non inserire '#'. Scrivi ad esempio 'lavoro, casa'.",
+      };
+    }
+
+    // no spazi dentro tag
+    if (/\s/.test(t)) {
+      return {
+        ok: false,
+        error: `Tag non valido "${t}": i tag non possono contenere spazi.`,
+      };
+    }
+
+    if (t.length > TAG_MAX_LEN) {
+      return {
+        ok: false,
+        error: `Tag troppo lungo "${t}": massimo ${TAG_MAX_LEN} caratteri.`,
+      };
+    }
+
+    if (!TAG_REGEX.test(t)) {
+      return {
+        ok: false,
+        error: `Tag non valido "${t}": usa solo lettere, numeri, "_" e "-".`,
+      };
+    }
+
+    const lower = t.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      normalized.push(lower);
+    }
+  }
+
+  return { ok: true, tags: normalized };
+}
+
+function validateNoteForm({ title, content, tags }) {
+  const t = (title ?? "").trim();
+  const c = (content ?? "").trim();
+
+  if (!t) return { ok: false, error: "Inserisci almeno un titolo." };
+  if (t.length > NOTE_TITLE_MAX)
+    return { ok: false, error: `Titolo troppo lungo (max ${NOTE_TITLE_MAX}).` };
+
+  if (c.length > NOTE_CONTENT_MAX)
+    return { ok: false, error: `Contenuto troppo lungo (max ${NOTE_CONTENT_MAX}).` };
+
+  const tagCheck = parseAndValidateTags(tags);
+  if (!tagCheck.ok) return { ok: false, error: tagCheck.error };
+
+  return { ok: true, title: t, content: c, tagsArr: tagCheck.tags };
+}
 
 export default function Notes() {
-    const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
-    const [notes, setNotes] = useState([]);
-    const [sharedNotes, setSharedNotes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
+  const [notes, setNotes] = useState([]);
+  const [sharedNotes, setSharedNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    const [search, setSearch] = useState("");
-    const [editingNote, setEditingNote] = useState(null);
-    const [sharingNoteId, setSharingNoteId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [editingNote, setEditingNote] = useState(null);
+  const [sharingNoteId, setSharingNoteId] = useState(null);
 
-    const [form, setForm] = useState({ title: "", content: "", tags: "" });
+  const [form, setForm] = useState({ title: "", content: "", tags: "" });
 
-    const loadNotes = async () => {
-        try {
-            setLoading(true);
-            const [myNotes, shared] = await Promise.all([
-                getAllNotes(),
-                getSharedNotes(),
-            ]);
+  // errori “form create”
+  const [formError, setFormError] = useState("");
 
-            setNotes(Array.isArray(myNotes) ? myNotes : []);
-            setSharedNotes(Array.isArray(shared) ? shared : []);
-        } catch (err) {
-            console.error("Errore caricamento note:", err);
-            setError("Errore nel caricamento delle note");
-        } finally {
-            setLoading(false);
+  const loadNotes = async () => {
+    try {
+      setLoading(true);
+      const [myNotes, shared] = await Promise.all([getAllNotes(), getSharedNotes()]);
+      setNotes(Array.isArray(myNotes) ? myNotes : []);
+      setSharedNotes(Array.isArray(shared) ? shared : []);
+    } catch (err) {
+      console.error("Errore caricamento note:", err);
+      setError("Errore nel caricamento delle note");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading && user) loadNotes();
+  }, [authLoading, user, refreshKey]);
+
+  const handleTagClick = (tagName) => {
+    setSearch(tagName);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    const check = validateNoteForm(form);
+    if (!check.ok) {
+      setFormError(check.error);
+      return;
+    }
+
+    try {
+      let savedNote;
+
+      // ricostruisco tags come stringa “pulita” per updateNoteTags
+      const cleanTagsString = check.tagsArr.join(", ");
+
+      if (editingNote) {
+        savedNote = await updateNote(editingNote.id, {
+          title: check.title,
+          content: check.content,
+        });
+
+        // tags: ok anche vuoto 
+        await updateNoteTags(editingNote.id, cleanTagsString);
+      } else {
+        savedNote = await createNote({
+          title: check.title,
+          content: check.content,
+        });
+
+        if (cleanTagsString) {
+          await updateNoteTags(savedNote.id, cleanTagsString);
         }
-    };
+      }
 
-    useEffect(() => {
-        if (!authLoading && user) loadNotes();
-    }, [authLoading, user, refreshKey]);
+      await sleep(200);
+      setRefreshKey((prev) => prev + 1);
+      resetForm();
+    } catch (err) {
+      console.error("Errore nel salvataggio:", err);
+      alert("Errore nel salvataggio dei dati o dei tag");
+    }
+  };
 
-    const handleTagClick = (tagName) => {
-        setSearch(tagName);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+  const resetForm = () => {
+    setEditingNote(null);
+    setForm({ title: "", content: "", tags: "" });
+    setFormError("");
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!form.title.trim()) return;
+  const handleDelete = async (id) => {
+    if (!window.confirm("Eliminare questa nota?")) return;
+    try {
+      await deleteNote(id);
+      await sleep(100);
+      setRefreshKey((prev) => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert("Errore nell'eliminazione");
+    }
+  };
 
-        try {
-            let savedNote;
-            if (editingNote) {
-                savedNote = await updateNote(editingNote.id, {
-                    title: form.title,
-                    content: form.content,
-                });
-                await updateNoteTags(editingNote.id, form.tags);
-            } else {
-                savedNote = await createNote({
-                    title: form.title,
-                    content: form.content
-                });
-                if (form.tags.trim()) {
-                    await updateNoteTags(savedNote.id, form.tags);
-                }
-            }
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-            await sleep(200);
-            setRefreshKey(prev => prev + 1);
-            resetForm();
-        } catch (err) {
-            console.error("Errore nel salvataggio:", err);
-            alert("Errore nel salvataggio dei dati o dei tag");
-        }
-    };
+  const handleFileChange = async (noteId, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const resetForm = () => {
-        setEditingNote(null);
-        setForm({ title: "", content: "", tags: "" });
-    };
+    if (file.size > MAX_FILE_SIZE) {
+      alert("File troppo grande: massimo 10 MB.");
+      e.target.value = "";
+      return;
+    }
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Eliminare questa nota?")) return;
-        try {
-            await deleteNote(id);
-            await sleep(100);
-            setRefreshKey(prev => prev + 1);
-        } catch (err) {
-            console.error(err);
-            alert("Errore nell'eliminazione");
-        }
-    };
+    try {
+      await uploadAttachment(noteId, file);
+      await sleep(100);
+      setRefreshKey((prev) => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert("Errore upload allegato");
+    }
+  };
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const handleDeleteAttachment = async (noteId, attId) => {
+    try {
+      await deleteAttachment(attId);
+      await sleep(100);
+      setRefreshKey((prev) => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert("Errore rimozione allegato");
+    }
+  };
 
-    const handleFileChange = async (noteId, e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+  const filteredNotes = useMemo(() => {
+    return notes.filter((n) => {
+      const searchTerm = search.toLowerCase();
+      const matchesText =
+        n.title.toLowerCase().includes(searchTerm) ||
+        n.content.toLowerCase().includes(searchTerm);
 
-        if (file.size > MAX_FILE_SIZE) {
-            alert("File troppo grande: massimo 10 MB.");
-            e.target.value = "";
-            return;
-        }
-
-        try {
-            await uploadAttachment(noteId, file);
-            await sleep(100);
-            setRefreshKey((prev) => prev + 1);
-        } catch (err) {
-            console.error(err);
-            alert("Errore upload allegato");
-        }
-    };
-
-    const handleDeleteAttachment = async (noteId, attId) => {
-        try {
-            await deleteAttachment(attId);
-            await sleep(100);
-            setRefreshKey(prev => prev + 1);
-        } catch (err) {
-            console.error(err);
-            alert("Errore rimozione allegato");
-        }
-    };
-
-    const filteredNotes = notes.filter((n) => {
-        const searchTerm = search.toLowerCase();
-        const matchesText =
-            n.title.toLowerCase().includes(searchTerm) ||
-            n.content.toLowerCase().includes(searchTerm);
-
-        let matchesTags = false;
-        if (n.tags) {
-            const tagsToSearch = Array.isArray(n.tags)
-                ? n.tags.map(t => (typeof t === 'object' ? t.name : t).toLowerCase())
-                : n.tags.toLowerCase().split(',').map(t => t.trim());
-            matchesTags = tagsToSearch.some(tag => tag.includes(searchTerm));
-        }
-        return matchesText || matchesTags;
+      let matchesTags = false;
+      if (n.tags) {
+        const tagsToSearch = Array.isArray(n.tags)
+          ? n.tags.map((t) => (typeof t === "object" ? t.name : t).toLowerCase())
+          : n.tags.toLowerCase().split(",").map((t) => t.trim());
+        matchesTags = tagsToSearch.some((tag) => tag.includes(searchTerm));
+      }
+      return matchesText || matchesTags;
     });
+  }, [notes, search]);
 
-    const filteredShared = sharedNotes.filter((n) => {
-        const searchTerm = search.toLowerCase();
-        const matchesText =
-            n.title.toLowerCase().includes(searchTerm) ||
-            n.content.toLowerCase().includes(searchTerm) ||
-            n.owner_name?.toLowerCase().includes(searchTerm);
+  const filteredShared = useMemo(() => {
+    return sharedNotes.filter((n) => {
+      const searchTerm = search.toLowerCase();
+      const matchesText =
+        n.title.toLowerCase().includes(searchTerm) ||
+        n.content.toLowerCase().includes(searchTerm) ||
+        n.owner_name?.toLowerCase().includes(searchTerm);
 
-        let matchesTags = false;
-        if (n.tags) {
-            const tagsToSearch = Array.isArray(n.tags)
-                ? n.tags.map(t => (typeof t === 'object' ? t.name : t).toLowerCase())
-                : n.tags.toLowerCase().split(',').map(t => t.trim());
-            matchesTags = tagsToSearch.some(tag => tag.includes(searchTerm));
-        }
-        return matchesText || matchesTags;
+      let matchesTags = false;
+      if (n.tags) {
+        const tagsToSearch = Array.isArray(n.tags)
+          ? n.tags.map((t) => (typeof t === "object" ? t.name : t).toLowerCase())
+          : n.tags.toLowerCase().split(",").map((t) => t.trim());
+        matchesTags = tagsToSearch.some((tag) => tag.includes(searchTerm));
+      }
+      return matchesText || matchesTags;
     });
+  }, [sharedNotes, search]);
 
-    if (authLoading || loading)
-        return (
-            <div style={styles.loader}>
-                <div style={styles.loaderCard}>
-                    <div style={styles.logo}>☁️</div>
-                    <h2 style={styles.text}>Caricamento delle note...</h2>
-                    <div style={styles.spinner}></div>
-                </div>
-            </div>
-        );
-
-    if (error)
-        return <p style={{ color: "red", textAlign: "center", marginTop: "40px" }}>{error}</p>;
-
+  if (authLoading || loading)
     return (
-        <div key={refreshKey}>
-            {editingNote && (
-                <EditNoteModal
-                    note={editingNote}
-                    onSaved={async () => {
-                        await sleep(150);
-                        setRefreshKey(prev => prev + 1);
-                        setEditingNote(null);
-                    }}
-                    onClose={() => setEditingNote(null)}
-                />
-            )}
-
-            {sharingNoteId && (
-                <ShareModal
-                    noteId={sharingNoteId}
-                    onClose={() => setSharingNoteId(null)}
-                />
-            )}
-
-            <div style={styles.page}>
-                <div style={styles.header}>
-                    <h1 style={styles.title}>Le mie Note</h1>
-                    <div style={styles.searchWrapper}>
-                        <input
-                            type="text"
-                            placeholder="Cerca per titolo, contenuto o #tag..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            style={styles.search}
-                        />
-                    </div>
-                </div>
-
-                <form onSubmit={handleSubmit} style={styles.formCard}>
-                    <h3 style={styles.formTitle}>
-                        {editingNote ? "Modifica Nota" : "Crea una nuova Nota"}
-                    </h3>
-                    <input
-                        type="text"
-                        placeholder="Titolo..."
-                        value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                        style={styles.input}
-                    />
-                    <textarea
-                        placeholder="Contenuto..."
-                        value={form.content}
-                        onChange={(e) => setForm({ ...form, content: e.target.value })}
-                        style={styles.textarea}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Tag (es: lavoro, casa, importante)"
-                        value={form.tags}
-                        onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                        style={styles.input}
-                    />
-                    <div style={styles.formActions}>
-                        <button type="submit" style={styles.primaryBtn}>
-                            {editingNote ? "Aggiorna" : "Crea"}
-                        </button>
-                        {editingNote && (
-                            <button
-                                type="button"
-                                onClick={resetForm}
-                                style={styles.secondaryBtn}
-                            >
-                                Annulla
-                            </button>
-                        )}
-                    </div>
-                </form>
-
-                <div style={styles.grid}>
-                    {filteredNotes.map((note) => (
-                        <NoteCard
-                            key={note.id}
-                            note={{ ...note, role: "owner" }}
-                            onTagClick={handleTagClick}
-                            onEdit={() => setEditingNote(note)}
-                            onDelete={() => handleDelete(note.id)}
-                            onShare={(id) => setSharingNoteId(id)}
-                            onUpload={(e) => handleFileChange(note.id, e)}
-                            onDeleteAttachment={(attId) =>
-                                handleDeleteAttachment(note.id, attId)
-                            }
-                        />
-                    ))}
-                </div>
-
-                <h2 style={styles.sectionTitle}>Condivise con me</h2>
-                <div style={styles.grid}>
-                    {filteredShared.length === 0 ? (
-                        <p style={{ opacity: 0.7 }}>Nessuna nota trovata</p>
-                    ) : (
-                        filteredShared.map((n) => (
-                            <NoteCard
-                                key={n.note_id}
-                                note={{
-                                    ...n,
-                                    id: n.note_id,
-                                    readOnly: n.role === "viewer",
-                                }}
-                                onTagClick={handleTagClick}
-                                onEdit={
-                                    n.role === "editor"
-                                        ? () => setEditingNote({ ...n, id: n.note_id })
-                                        : undefined
-                                }
-                                onUpload={(e) => handleFileChange(n.note_id, e)}
-                                onDeleteAttachment={(attId) =>
-                                    handleDeleteAttachment(n.note_id, attId)
-                                }
-                                onShare={undefined}
-                            />
-                        ))
-                    )}
-                </div>
-            </div>
+      <div style={styles.loader}>
+        <div style={styles.loaderCard}>
+          <div style={styles.logo}>☁️</div>
+          <h2 style={styles.text}>Caricamento delle note...</h2>
+          <div style={styles.spinner}></div>
         </div>
+      </div>
     );
+
+  if (error)
+    return (
+      <p style={{ color: "red", textAlign: "center", marginTop: "40px" }}>{error}</p>
+    );
+
+  return (
+    <div key={refreshKey}>
+      {editingNote && (
+        <EditNoteModal
+          note={editingNote}
+          onSaved={async () => {
+            await sleep(150);
+            setRefreshKey((prev) => prev + 1);
+            setEditingNote(null);
+          }}
+          onClose={() => setEditingNote(null)}
+        />
+      )}
+
+      {sharingNoteId && (
+        <ShareModal noteId={sharingNoteId} onClose={() => setSharingNoteId(null)} />
+      )}
+
+      <div style={styles.page}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Le mie Note</h1>
+          <div style={styles.searchWrapper}>
+            <input
+              type="text"
+              placeholder="Cerca per titolo, contenuto o #tag..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={styles.search}
+            />
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} style={styles.formCard}>
+          <h3 style={styles.formTitle}>{editingNote ? "Modifica Nota" : "Crea una nuova Nota"}</h3>
+
+          <input
+            type="text"
+            placeholder="Titolo..."
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            style={styles.input}
+          />
+
+          <textarea
+            placeholder="Contenuto..."
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            style={styles.textarea}
+          />
+
+          <input
+            type="text"
+            placeholder="Tag (es: lavoro, casa, importante)"
+            value={form.tags}
+            onChange={(e) => setForm({ ...form, tags: e.target.value })}
+            style={styles.input}
+          />
+
+          {/*errore form */}
+          {formError && <div style={styles.formError}>{formError}</div>}
+
+          <div style={styles.formActions}>
+            <button type="submit" style={styles.primaryBtn}>
+              {editingNote ? "Aggiorna" : "Crea"}
+            </button>
+
+            {editingNote && (
+              <button type="button" onClick={resetForm} style={styles.secondaryBtn}>
+                Annulla
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div style={styles.grid}>
+          {filteredNotes.map((note) => (
+            <NoteCard
+              key={note.id}
+              note={{ ...note, role: "owner" }}
+              onTagClick={handleTagClick}
+              onEdit={() => setEditingNote(note)}
+              onDelete={() => handleDelete(note.id)}
+              onShare={(id) => setSharingNoteId(id)}
+              onUpload={(e) => handleFileChange(note.id, e)}
+              onDeleteAttachment={(attId) => handleDeleteAttachment(note.id, attId)}
+            />
+          ))}
+        </div>
+
+        <h2 style={styles.sectionTitle}>Condivise con me</h2>
+        <div style={styles.grid}>
+          {filteredShared.length === 0 ? (
+            <p style={{ opacity: 0.7 }}>Nessuna nota trovata</p>
+          ) : (
+            filteredShared.map((n) => (
+              <NoteCard
+                key={n.note_id}
+                note={{
+                  ...n,
+                  id: n.note_id,
+                  readOnly: n.role === "viewer",
+                }}
+                onTagClick={handleTagClick}
+                onEdit={
+                  n.role === "editor"
+                    ? () => setEditingNote({ ...n, id: n.note_id })
+                    : undefined
+                }
+                onUpload={(e) => handleFileChange(n.note_id, e)}
+                onDeleteAttachment={(attId) => handleDeleteAttachment(n.note_id, attId)}
+                onShare={undefined}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const styles = {
