@@ -4,7 +4,7 @@ export default function Login() {
   const handleLogin = () => {
     // Reindirizzamento al flusso EasyAuth di Azure
     window.location.href =
-      "/.auth/login/aad?post_login_redirect_uri=/dashboard&prompt=select_account";
+      "/.auth/login/aad?post_login_redirect_uri=/dashboard&prompt=login";
   };
 
   const handleReset = () => {
