@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
 import { getAllNotes, getSharedNotes } from "../services/noteService";
 import { getAllTasks, createTask } from "../services/taskService";
 import EditNoteModal from "../components/EditNoteModal";
@@ -121,7 +122,7 @@ export default function Dashboard() {
     const now = new Date();
     const diffHours = (due - now) / 36e5;
 
-    // Accettiamo task scadute da massimo 24 ore (diff > -24) 
+    // task scadute da massimo 24 ore (diff > -24) 
     // o che scadono nelle prossime 24 ore (diff <= 24)
     return diffHours >= -24 && diffHours <= 24;
   });
