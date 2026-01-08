@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useMsal } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Logout() {
@@ -7,40 +6,38 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-     const doLogout = async () => {
-    // Mostra animazione logout per un attimo
-    await new Promise((resolve) => setTimeout(resolve, 600));
+  let isMounted = true;
 
+  const doLogout = async () => {
     try {
-      // 🔹 Esegui il logout popup SENZA redirect automatico
-      await instance.logoutPopup({
-        postLogoutRedirectUri: "/", // evita redirect diretto
-        mainWindowRedirectUri: "/", // niente reload
-      });
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // Attesa estetica (puoi regolare il tempo)
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      // 🔹 Ora puoi navigare tranquillamente
-      navigate("/login", { replace: true });
+      if (isMounted) {
+        await instance.logoutPopup({
+          account: instance.getActiveAccount(),
+          postLogoutRedirectUri: window.location.origin,
+        });
+        navigate("/login", { replace: true });
+      }
     } catch (err) {
-      console.error("[MSAL] Errore durante logout:", err);
-      navigate("/login", { replace: true });
+      console.error(err);
+      if (isMounted) navigate("/login", { replace: true });
     }
   };
 
   doLogout();
+  return () => { isMounted = false; }; 
 }, [instance, navigate]);
 
 
   return (
     <div style={styles.loaderContainer}>
-        <div style={styles.loaderCard}>
-          <div style={styles.logo}>☁️</div>
-          <h2 style={styles.text}>Disconnessione in corso...</h2>
-          <div style={styles.spinner}></div>
-        </div>
+      <div style={styles.loaderCard}>
+        <div style={styles.logo}>☁️</div>
+        <h2 style={styles.text}>Disconnessione in corso...</h2>
+        <div style={styles.spinner}></div>
       </div>
+    </div>
   );
 }
 
