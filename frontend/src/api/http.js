@@ -9,9 +9,9 @@ const http = axios.create({
 
 http.interceptors.request.use((config) => {
   // Recuperiamo i dati salvati nell'AuthContext
-  const userId = localStorage.getItem("nimbus_user_id");
-  const userEmail = localStorage.getItem("nimbus_user_email");
-  const userName = localStorage.getItem("nimbus_user_name");
+  const userId = sessionstorage.getItem("nimbus_user_id");
+  const userEmail = sessionstorage.getItem("nimbus_user_email");
+  const userName = sessionstorage.getItem("nimbus_user_name");
 
   if (userId) {
     config.headers["x-nimbus-userid"] = userId;

@@ -8,7 +8,7 @@ export default function Login() {
   };
 
   const handleReset = () => {
-    localStorage.clear();
+    sessionstorage.clear();
     alert("Cache pulita correttamente");
   };
 

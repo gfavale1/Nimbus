@@ -26,9 +26,9 @@ export function AuthProvider({ children }) {
                         email: principal.userDetails
                     };
 
-                    localStorage.setItem("nimbus_user_id", userData.userId);
-                    localStorage.setItem("nimbus_user_email", userData.email);
-                    localStorage.setItem("nimbus_user_name", userData.name);
+                    sessionstorage.setItem("nimbus_user_id", userData.userId);
+                    sessionstorage.setItem("nimbus_user_email", userData.email);
+                    sessionstorage.setItem("nimbus_user_name", userData.name);
 
                     setUser(userData);
                     setIsAuthenticated(true);
