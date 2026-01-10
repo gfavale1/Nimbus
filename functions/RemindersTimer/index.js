@@ -1,6 +1,6 @@
 const db = require("../lib/db");
 const { sendPushOrEmail } = require("../lib/notify");
-const { taskReminderTemplate } = require("../lib/templates/taskReminderTemplate");
+const { taskReminderTemplate } = require("../lib/mailTemplates/taskReminderTemplate");
 
 /**
  * Azure Function Timer Trigger per l'invio automatico dei promemoria sui task.

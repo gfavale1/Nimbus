@@ -26,11 +26,11 @@ function env(name, fallback) {
  */
 function getPool() {
   if (!pool) {
-    const host = env("DB_HOST", process.env.MYSQL_HOST);
-    const port = Number(env("DB_PORT", process.env.MYSQL_PORT) || 3306);
-    const user = env("DB_USER", process.env.MYSQL_USER);
-    const password = env("DB_PASSWORD", process.env.MYSQL_PASSWORD);
-    const database = env("DB_NAME", process.env.MYSQL_DATABASE);
+    const host = env("DB_HOST", process.env.DB_HOST);
+    const port = Number(env("DB_PORT", process.env.DB_PORT) || 3306);
+    const user = env("DB_USER", process.env.DB_USER);
+    const password = env("DB_PASSWORD", process.env.DB_PASSWORD);
+    const database = env("DB_NAME", process.env.DB_DATABASE);
 
     if (!host || !user || !password || !database) {
       throw new Error(

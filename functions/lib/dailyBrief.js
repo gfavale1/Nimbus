@@ -32,7 +32,6 @@ function todayISO() {
 async function generateDailyBriefForUser(userId) {
   const today = todayISO();
 
-  // Recupera le note create o modificate oggi
   const notes = await db.query(
     `
     SELECT title, content
@@ -43,7 +42,6 @@ async function generateDailyBriefForUser(userId) {
     [userId, today]
   );
 
-  // Recupera i task con scadenza odierna
   const tasks = await db.query(
     `
     SELECT title, status, priority
@@ -55,12 +53,10 @@ async function generateDailyBriefForUser(userId) {
     [userId, today]
   );
 
-  // Se non ci sono dati rilevanti, non genera il Daily Brief
   if (!notes?.length && !tasks?.length) {
     return null;
   }
 
-  // Costruzione del prompt per il modello AI
   const prompt = `
 Agisci come un assistente di produttività personale.
 
