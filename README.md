@@ -33,6 +33,8 @@ pianificate (notifiche, promemoria, sintesi AI) sono delegate a componenti serve
 
 L’uso di servizi gestiti Azure (Database, Blob Storage, Entra ID) consente di minimizzare la complessità infrastrutturale e concentrarsi sulla logica applicativa.
 
+![Architettura cloud Nimbus](docs/architettura.png)
+
 ### Frontend
 - **React + Vite**
 - Layout applicativo con Sidebar e routing protetto
