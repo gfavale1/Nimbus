@@ -11,8 +11,7 @@ notifiche email e funzionalità AI (come Daily Brief).
 - **MySQL** (Azure Database for MySQL)
 - **Azure Blob Storage** (allegati)
 - **Azure Entra ID**
-  - Easy Auth (produzione)
-  - MSAL / token Bearer (sviluppo locale)
+  - Easy Auth 
 - **Azure Functions**
   - Invio email
   - Reminder task

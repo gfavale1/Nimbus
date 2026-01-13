@@ -35,7 +35,7 @@ Frontend sviluppato con **React e Vite**; fornisce l’interfaccia utente per la
 
 - **Autenticazione**
   - Integrazione con **Azure Entra ID**
-  - Gestione sessione tramite backend (Easy Auth)
+  - Gestione sessione tramite backend 
 
 ---
 

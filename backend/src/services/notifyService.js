@@ -157,7 +157,7 @@ async function notifyTaskExpiring(task, user) {
     taskTitle: task.title, 
     dueDate: task.due_date 
   });
-  await sendEmail({ userId: user.id, email: user.email, subject: `⚠️ Scadenza imminente: ${task.title}`, html, isTask: true });
+  await sendEmail({ userId: user.id, email: user.email, subject: `Scadenza imminente: ${task.title}`, html, isTask: true });
 }
 
 // AI

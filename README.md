@@ -36,7 +36,7 @@ L’uso di servizi gestiti Azure (Database, Blob Storage, Entra ID) consente di 
 ### Frontend
 - **React + Vite**
 - Layout applicativo con Sidebar e routing protetto
-- Autenticazione tramite **Azure Entra ID (Easy Auth / MSAL)**
+- Autenticazione tramite **Azure Entra ID**
 - UI responsive con modali e dashboard interattiva
 - Hosting su **Azure App Service** / **Azure Static Web Apps**
 
@@ -65,8 +65,6 @@ L’uso di servizi gestiti Azure (Database, Blob Storage, Entra ID) consente di 
   - Monitoraggio prestazioni
 - **Application Insights**
   -  Diagnostica
-- **Azure CDN**
-  - Distribuzione ottimizzata dei file statici
 - **Azure App Service**
   - Host del backend
 - **Azure Static Webapp**

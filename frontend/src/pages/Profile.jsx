@@ -284,7 +284,6 @@ const styles = {
   },
 };
 
-// 🔹 Animazione globale
 if (typeof document !== "undefined" && document.styleSheets.length) {
   const sheet = document.styleSheets[0];
   sheet.insertRule(

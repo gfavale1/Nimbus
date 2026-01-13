@@ -6,7 +6,6 @@ export default function MainLayout() {
   const { user, signOut } = useMsalAuth();
   const location = useLocation();
 
-  // ⛔ Niente sidebar su /login
   if (location.pathname === "/login") {
     return <Outlet />;
   }

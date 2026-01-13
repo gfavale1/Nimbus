@@ -17,6 +17,7 @@ const { dailyBriefTemplate } = require("../lib/mailTemplates/dailyBriefTemplate"
  *
  * @param {Object} context - Contesto di esecuzione Azure Function
  * @param {Object} context.log - Logger fornito da Azure
+ * @param {Object} myTimer - Oggetto Timer Trigger 
  *
  * @returns {Promise<void>} Nessun valore di ritorno (Timer Trigger)
  */
